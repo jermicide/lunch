@@ -53,6 +53,9 @@ module.exports = async function (context, req) {
             key: GOOGLE_API_KEY
         };
         
+        // Create the URL string
+        const paramString = querystring.stringify(params);
+        
         // Sign the URL
         const signedUrl = `${baseUrl}?${paramString}`;
         
