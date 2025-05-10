@@ -20,7 +20,19 @@ const WheelOfLunch = () => {
     '#9966FF', '#FF9F40', '#8AC926', '#1982C4',
     '#6A4C93', '#F72585', '#7209B7', '#3A0CA3'
   ], []);
-  
+  // Function to toggle to ZIP code mode
+  function toggleToZipCodeMode() {
+    console.log('Switching to ZIP code mode');
+    // First clear the user location
+    setUserLocation(null);
+    // Reset restaurants and selection
+    setRestaurants([]);
+    setSelectedRestaurant(null);
+    // Then set location error to show ZIP code form
+    setLocationError("Enter a ZIP code to search a different area.");
+    // Update status
+    setStatus('Please enter a ZIP code to find restaurants');
+  }
   // Getting user location
   useEffect(() => {
     if (!isUsingZipCode && !userLocation && !isLocationLocked) {
@@ -442,6 +454,7 @@ const WheelOfLunch = () => {
                 className="flex-1 px-3 py-2 border rounded-l text-sm"
                 pattern="^\d{5}(-\d{4})?$"
                 title="Enter a valid US ZIP code"
+                aria-label="ZIP code"
               />
               <button 
                 type="submit" 
@@ -450,22 +463,24 @@ const WheelOfLunch = () => {
                 Search
               </button>
             </form>
+            {locationError && (
+              <div className="text-xs text-gray-500 mt-1">
+                Enter a US ZIP code (e.g., 75001) to find nearby restaurants
+              </div>
+            )}
           </div>
         )}
         
-        {/* Show zip code entry option when location is available */}
-        {!locationError && userLocation && !isUsingZipCode && (
-          <button
-            onClick={() => {
-              setLocationError("Enter a ZIP code to search a different area.");
-              setUserLocation(null);
-            }}
-            className="mt-2 text-sm text-blue-600 hover:underline"
-            type="button"
-          >
-            Use ZIP code instead
-          </button>
-        )}
+      {/* Show zip code entry option when location is available */}
+      {userLocation && !isUsingZipCode && (
+        <button
+          onClick={toggleToZipCodeMode}
+          className="mt-2 text-sm text-blue-600 hover:underline focus:underline focus:outline-none"
+          type="button"
+        >
+          Use ZIP code instead
+        </button>
+      )}
       </div>
       
       <div className="mb-6 relative">
