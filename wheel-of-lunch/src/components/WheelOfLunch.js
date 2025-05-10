@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ArrowDown, RefreshCw, Map, Lock, Unlock } from 'lucide-react';
 
 const WheelOfLunch = () => {
@@ -14,12 +14,12 @@ const WheelOfLunch = () => {
   const [locationError, setLocationError] = useState(null);
   const canvasRef = useRef(null);
   
-  // Colors for the wheel segments
-  const colors = [
+  // Colors for the wheel segments - memoized to prevent unnecessary re-renders
+  const colors = useMemo(() => [
     '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
     '#9966FF', '#FF9F40', '#8AC926', '#1982C4',
     '#6A4C93', '#F72585', '#7209B7', '#3A0CA3'
-  ];
+  ], []);
   
   // Getting user location
   useEffect(() => {
