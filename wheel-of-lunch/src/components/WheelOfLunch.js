@@ -12,6 +12,7 @@ const WheelOfLunch = () => {
   const [zipCode, setZipCode] = useState('');
   const [isUsingZipCode, setIsUsingZipCode] = useState(false);
   const [locationError, setLocationError] = useState(null);
+  const [searchRadius, setSearchRadius] = useState(1500); // Default radius in meters
   const canvasRef = useRef(null);
   
   // Colors for the wheel segments - memoized to prevent unnecessary re-renders
@@ -81,7 +82,8 @@ const WheelOfLunch = () => {
       const fetchRestaurants = async () => {
         try {
           // Make a request to our Azure Function API proxy
-          const response = await fetch(`/api/places?lat=${userLocation.lat}&lng=${userLocation.lng}`);
+          // Pass the search radius as a parameter
+          const response = await fetch(`/api/places?lat=${userLocation.lat}&lng=${userLocation.lng}&radius=${searchRadius}`);
           
           if (!response.ok) {
             const errorData = await response.json();
@@ -92,7 +94,7 @@ const WheelOfLunch = () => {
           
           // Process the Places API response
           if (!data.places || !Array.isArray(data.places) || data.places.length === 0) {
-            setStatus('No restaurants found in this area. Try a different location.');
+            setStatus('No restaurants found in this area. Try a different location or increase your search radius.');
             return;
           }
           
@@ -122,7 +124,10 @@ const WheelOfLunch = () => {
           });
           
           setRestaurants(formattedRestaurants);
-          setStatus(`Found ${formattedRestaurants.length} restaurants${isUsingZipCode ? ` for ZIP ${zipCode}` : ''}! Spin the wheel to choose.`);
+          
+          // Update status with radius information
+          const radiusInMiles = (searchRadius / 1609.34).toFixed(1);
+          setStatus(`Found ${formattedRestaurants.length} restaurants within ${radiusInMiles} miles${isUsingZipCode ? ` of ZIP ${zipCode}` : ''}! Spin the wheel to choose.`);
         } catch (error) {
           console.error('Error fetching restaurants:', error);
           setStatus(`Error loading restaurants: ${error.message}. Please try again.`);
@@ -131,7 +136,7 @@ const WheelOfLunch = () => {
       
       fetchRestaurants();
     }
-  }, [userLocation, restaurants.length, isLocationLocked, isUsingZipCode, zipCode]);
+  }, [userLocation, restaurants.length, isLocationLocked, isUsingZipCode, zipCode, searchRadius]);
   
   // Function to handle zip code submission
   function handleZipCodeSubmit(e) {
@@ -190,6 +195,21 @@ const WheelOfLunch = () => {
     setSelectedRestaurant(null);
     setLocationError(null); // Clear the error so geolocation will be attempted
   }
+  
+  // Function to handle radius change
+  function handleRadiusChange(e) {
+    const newRadius = Number(e.target.value);
+    setSearchRadius(newRadius);
+    
+    // If we already have a location, clear restaurants to trigger a new search
+    if (userLocation) {
+      setRestaurants([]);
+      setSelectedRestaurant(null);
+    }
+  }
+  
+  // Convert meters to miles for display
+  const radiusInMiles = (searchRadius / 1609.34).toFixed(1);
   
   // Function to draw the wheel - defined with useRef to avoid dependency issues
   const drawWheelRef = useRef((restaurantsData = restaurants) => {
@@ -477,6 +497,31 @@ const WheelOfLunch = () => {
           </div>
         )}
         
+        {/* Search radius slider */}
+        <div className="mt-4 mb-2">
+          <label htmlFor="radius-slider" className="block text-sm font-medium text-gray-700 mb-1">
+            Search Radius: {radiusInMiles} miles
+          </label>
+          <input
+            type="range"
+            id="radius-slider"
+            min="800"
+            max="5000"
+            step="100"
+            value={searchRadius}
+            onChange={handleRadiusChange}
+            className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
+          />
+          <div className="flex justify-between text-xs text-gray-500 mt-1">
+            <span>0.5 mi</span>
+            <span>1 mi</span>
+            <span>1.5 mi</span>
+            <span>2 mi</span>
+            <span>2.5 mi</span>
+            <span>3 mi</span>
+          </div>
+        </div>
+        
         {/* Location error and zip code input */}
         {locationError && !userLocation && (
           <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
@@ -603,6 +648,11 @@ const WheelOfLunch = () => {
           </div>
         </div>
       )}
+      
+      <div className="mt-6 text-sm text-gray-600 max-w-md text-center">
+        <p>Note: This is a demonstration. In a production app, you would use the Google Places API 
+        to fetch real restaurant data based on your location.</p>
+      </div>
     </div>
   );
 };

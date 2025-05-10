@@ -26,7 +26,7 @@ module.exports = async function (context, req) {
     context.log('Processing places API request with URL signing');
     
     try {
-        const { lat, lng } = req.query;
+        const { lat, lng, range = 1500 } = req.query;
         
         if (!lat || !lng) {
             context.res = {
@@ -61,7 +61,7 @@ module.exports = async function (context, req) {
         const baseUrl = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json';
         const params = {
             location: `${lat},${lng}`,
-            radius: 5000,
+            radius: range,
             type: 'restaurant',
             key: GOOGLE_API_KEY
         };
