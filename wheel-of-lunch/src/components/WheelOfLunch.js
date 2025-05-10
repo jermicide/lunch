@@ -20,23 +20,28 @@ const WheelOfLunch = () => {
     '#9966FF', '#FF9F40', '#8AC926', '#1982C4',
     '#6A4C93', '#F72585', '#7209B7', '#3A0CA3'
   ], []);
+  
   // Function to toggle to ZIP code mode
   function toggleToZipCodeMode() {
     console.log('Switching to ZIP code mode');
-    // First clear the user location
-    setUserLocation(null);
-    // Reset restaurants and selection
+    // Clear restaurants and selected restaurant
     setRestaurants([]);
     setSelectedRestaurant(null);
-    // Then set location error to show ZIP code form
+    // Set the error message to show the ZIP code form
     setLocationError("Enter a ZIP code to search a different area.");
+    // Clear location
+    setUserLocation(null);
     // Update status
     setStatus('Please enter a ZIP code to find restaurants');
   }
+  
   // Getting user location
   useEffect(() => {
-    if (!isUsingZipCode && !userLocation && !isLocationLocked) {
+    // Only try to get browser location if we don't have a location yet,
+    // we're not using ZIP code mode, and location isn't locked
+    if (!isUsingZipCode && !userLocation && !isLocationLocked && !locationError) {
       setStatus('Requesting your location...');
+      
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
@@ -58,9 +63,17 @@ const WheelOfLunch = () => {
         setStatus('Geolocation not supported. Please enter a zip code.');
       }
     }
-  }, [userLocation, isLocationLocked, isUsingZipCode]);
+  }, [userLocation, isLocationLocked, isUsingZipCode, locationError]);
   
-  // Using Google Places API V2 to fetch restaurants
+  // Track when the locationError is set and userLocation is null
+  // This will properly show the ZIP code input form
+  useEffect(() => {
+    if (locationError && !userLocation) {
+      console.log('Location error detected, showing ZIP code form');
+    }
+  }, [locationError, userLocation]);
+  
+  // Using Google Places API to fetch restaurants
   useEffect(() => {
     if (userLocation && restaurants.length === 0 && !isLocationLocked) {
       setStatus('Finding nearby restaurants...');
@@ -77,7 +90,7 @@ const WheelOfLunch = () => {
           
           const data = await response.json();
           
-          // Process the Places API V2 response
+          // Process the Places API response
           if (!data.places || !Array.isArray(data.places) || data.places.length === 0) {
             setStatus('No restaurants found in this area. Try a different location.');
             return;
@@ -119,142 +132,6 @@ const WheelOfLunch = () => {
       fetchRestaurants();
     }
   }, [userLocation, restaurants.length, isLocationLocked, isUsingZipCode, zipCode]);
-  
-  // Function to draw the wheel - defined with useRef to avoid dependency issues
-  const drawWheelRef = useRef((restaurantsData = restaurants) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const radius = Math.min(centerX, centerY) - 10;
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw wheel segments
-    const totalSlices = restaurantsData.length;
-    if (totalSlices === 0) return;
-    
-    const anglePerSlice = (2 * Math.PI) / totalSlices;
-    
-    restaurantsData.forEach((restaurant, index) => {
-      // Calculate start and end angles
-      const startAngle = index * anglePerSlice;
-      const endAngle = (index + 1) * anglePerSlice;
-      
-      // Draw segment
-      ctx.beginPath();
-      ctx.moveTo(centerX, centerY);
-      ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-      ctx.closePath();
-      
-      // Fill segment
-      ctx.fillStyle = colors[index % colors.length];
-      ctx.fill();
-      
-      // Add restaurant name
-      ctx.save();
-      ctx.translate(centerX, centerY);
-      ctx.rotate(startAngle + anglePerSlice / 2);
-      ctx.textAlign = 'right';
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 14px Arial';
-      ctx.fillText(restaurant.name, radius - 20, 5);
-      ctx.restore();
-    });
-    
-    // Draw center circle
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
-    ctx.fillStyle = '#333';
-    ctx.fill();
-    
-    // Draw pointer
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY - 30);
-    ctx.lineTo(centerX - 10, centerY - 60);
-    ctx.lineTo(centerX + 10, centerY - 60);
-    ctx.closePath();
-    ctx.fillStyle = '#FF4136';
-    ctx.fill();
-  });
-  
-  // Update drawWheelRef.current when restaurants or colors change
-  useEffect(() => {
-    drawWheelRef.current = (restaurantsData = restaurants) => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      
-      const ctx = canvas.getContext('2d');
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      const radius = Math.min(centerX, centerY) - 10;
-      
-      // Clear canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Draw wheel segments
-      const totalSlices = restaurantsData.length;
-      if (totalSlices === 0) return;
-      
-      const anglePerSlice = (2 * Math.PI) / totalSlices;
-      
-      restaurantsData.forEach((restaurant, index) => {
-        // Calculate start and end angles
-        const startAngle = index * anglePerSlice;
-        const endAngle = (index + 1) * anglePerSlice;
-        
-        // Draw segment
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-        ctx.closePath();
-        
-        // Fill segment
-        ctx.fillStyle = colors[index % colors.length];
-        ctx.fill();
-        
-        // Add restaurant name
-        ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.rotate(startAngle + anglePerSlice / 2);
-        ctx.textAlign = 'right';
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 14px Arial';
-        ctx.fillText(restaurant.name, radius - 20, 5);
-        ctx.restore();
-      });
-      
-      // Draw center circle
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
-      ctx.fillStyle = '#333';
-      ctx.fill();
-      
-      // Draw pointer
-      ctx.beginPath();
-      ctx.moveTo(centerX, centerY - 30);
-      ctx.lineTo(centerX - 10, centerY - 60);
-      ctx.lineTo(centerX + 10, centerY - 60);
-      ctx.closePath();
-      ctx.fillStyle = '#FF4136';
-      ctx.fill();
-    };
-  }, [restaurants, colors]);
-  
-  // Helper function to call the ref's current value
-  function drawWheel() {
-    drawWheelRef.current();
-  }
-  
-  // Update wheel when restaurants change
-  useEffect(() => {
-    if (restaurants.length > 0 && canvasRef.current) {
-      drawWheel();
-    }
-  }, [restaurants]);
   
   // Function to handle zip code submission
   function handleZipCodeSubmit(e) {
@@ -311,7 +188,164 @@ const WheelOfLunch = () => {
     setZipCode('');
     setRestaurants([]);
     setSelectedRestaurant(null);
+    setLocationError(null); // Clear the error so geolocation will be attempted
   }
+  
+  // Function to draw the wheel - defined with useRef to avoid dependency issues
+  const drawWheelRef = useRef((restaurantsData = restaurants) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = Math.min(centerX, centerY) - 10;
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw wheel segments
+    const totalSlices = restaurantsData.length;
+    if (totalSlices === 0) return;
+    
+    const anglePerSlice = (2 * Math.PI) / totalSlices;
+    
+    restaurantsData.forEach((restaurant, index) => {
+      // Calculate start and end angles
+      const startAngle = index * anglePerSlice;
+      const endAngle = (index + 1) * anglePerSlice;
+      
+      // Draw segment
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+      ctx.closePath();
+      
+      // Fill segment
+      ctx.fillStyle = colors[index % colors.length];
+      ctx.fill();
+      
+      // Add restaurant name - ensure text is always readable
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(startAngle + anglePerSlice / 2);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 14px Arial';
+      
+      // Adjust text position and rotation to ensure it's readable
+      let textRadius = radius - 20;
+      // Check if text is upside down
+      if (startAngle + anglePerSlice / 2 > Math.PI / 2 && startAngle + anglePerSlice / 2 < Math.PI * 3 / 2) {
+        ctx.rotate(Math.PI); // Rotate text 180 degrees
+        ctx.textAlign = 'left';
+        textRadius = -textRadius; // Negative radius to flip position
+      }
+      
+      ctx.fillText(restaurant.name, textRadius, 5);
+      ctx.restore();
+    });
+    
+    // Draw center circle
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
+    ctx.fillStyle = '#333';
+    ctx.fill();
+    
+    // Draw pointer
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY - 30);
+    ctx.lineTo(centerX - 10, centerY - 60);
+    ctx.lineTo(centerX + 10, centerY - 60);
+    ctx.closePath();
+    ctx.fillStyle = '#FF4136';
+    ctx.fill();
+  });
+  
+  // Update drawWheelRef.current when restaurants or colors change
+  useEffect(() => {
+    drawWheelRef.current = (restaurantsData = restaurants) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      
+      const ctx = canvas.getContext('2d');
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const radius = Math.min(centerX, centerY) - 10;
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw wheel segments
+      const totalSlices = restaurantsData.length;
+      if (totalSlices === 0) return;
+      
+      const anglePerSlice = (2 * Math.PI) / totalSlices;
+      
+      restaurantsData.forEach((restaurant, index) => {
+        // Calculate start and end angles
+        const startAngle = index * anglePerSlice;
+        const endAngle = (index + 1) * anglePerSlice;
+        
+        // Draw segment
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+        ctx.closePath();
+        
+        // Fill segment
+        ctx.fillStyle = colors[index % colors.length];
+        ctx.fill();
+        
+        // Add restaurant name - ensure text is always readable
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(startAngle + anglePerSlice / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 14px Arial';
+        
+        // Adjust text position and rotation to ensure it's readable
+        let textRadius = radius - 20;
+        // Check if text is upside down
+        if (startAngle + anglePerSlice / 2 > Math.PI / 2 && startAngle + anglePerSlice / 2 < Math.PI * 3 / 2) {
+          ctx.rotate(Math.PI); // Rotate text 180 degrees
+          ctx.textAlign = 'left';
+          textRadius = -textRadius; // Negative radius to flip position
+        }
+        
+        ctx.fillText(restaurant.name, textRadius, 5);
+        ctx.restore();
+      });
+      
+      // Draw center circle
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
+      ctx.fillStyle = '#333';
+      ctx.fill();
+      
+      // Draw pointer
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY - 30);
+      ctx.lineTo(centerX - 10, centerY - 60);
+      ctx.lineTo(centerX + 10, centerY - 60);
+      ctx.closePath();
+      ctx.fillStyle = '#FF4136';
+      ctx.fill();
+    };
+  }, [restaurants, colors]);
+  
+  // Helper function to call the ref's current value
+  function drawWheel() {
+    drawWheelRef.current();
+  }
+  
+  // Update wheel when restaurants change
+  useEffect(() => {
+    if (restaurants.length > 0 && canvasRef.current) {
+      drawWheel();
+    }
+  }, [restaurants]);
   
   // Function to spin the wheel
   function spinWheel() {
@@ -426,6 +460,7 @@ const WheelOfLunch = () => {
                 <button 
                   onClick={switchToBrowserLocation}
                   className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                  type="button"
                 >
                   Use Browser Location
                 </button>
@@ -434,6 +469,7 @@ const WheelOfLunch = () => {
                 onClick={toggleLocationLock} 
                 className="p-1 rounded bg-gray-200 hover:bg-gray-300"
                 title={isLocationLocked ? "Unlock location" : "Lock location"}
+                type="button"
               >
                 {isLocationLocked ? <Lock size={16} /> : <Unlock size={16} />}
               </button>
@@ -463,24 +499,22 @@ const WheelOfLunch = () => {
                 Search
               </button>
             </form>
-            {locationError && (
-              <div className="text-xs text-gray-500 mt-1">
-                Enter a US ZIP code (e.g., 75001) to find nearby restaurants
-              </div>
-            )}
+            <div className="text-xs text-gray-500 mt-1">
+              Enter a US ZIP code (e.g., 75001) to find nearby restaurants
+            </div>
           </div>
         )}
         
-      {/* Show zip code entry option when location is available */}
-      {userLocation && !isUsingZipCode && (
-        <button
-          onClick={toggleToZipCodeMode}
-          className="mt-2 text-sm text-blue-600 hover:underline focus:underline focus:outline-none"
-          type="button"
-        >
-          Use ZIP code instead
-        </button>
-      )}
+        {/* Show zip code entry option when location is available */}
+        {userLocation && !isUsingZipCode && !locationError && (
+          <button
+            onClick={toggleToZipCodeMode}
+            className="mt-2 text-sm text-blue-600 hover:underline focus:underline focus:outline-none"
+            type="button"
+          >
+            Use ZIP code instead
+          </button>
+        )}
       </div>
       
       <div className="mb-6 relative">
@@ -504,6 +538,7 @@ const WheelOfLunch = () => {
               ? 'bg-gray-400 cursor-not-allowed' 
               : 'bg-green-500 hover:bg-green-600'
           }`}
+          type="button"
         >
           {isSpinning ? 'Spinning...' : 'Spin the Wheel!'}
         </button>
@@ -514,6 +549,7 @@ const WheelOfLunch = () => {
           className={`px-6 py-3 rounded-lg text-white font-bold flex items-center ${
             isSpinning ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
           }`}
+          type="button"
         >
           <RefreshCw size={18} className="mr-2" />
           Refresh Options
@@ -521,7 +557,7 @@ const WheelOfLunch = () => {
       </div>
       
       {selectedRestaurant && (
-        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md border-t-4 border-green-500">
+        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md border-t-4 border-green-500 mb-6">
           <h2 className="text-xl font-bold text-center mb-3">Your Lunch Pick:</h2>
           <div className="text-center">
             <p className="text-3xl font-bold text-green-700 mb-2">{selectedRestaurant.name}</p>
@@ -543,7 +579,7 @@ const WheelOfLunch = () => {
             )}
             
             <div className="flex justify-center gap-3">
-              {selectedRestaurant.place_id && (
+              {selectedRestaurant.id && (
                 <a 
                   href={`https://www.google.com/maps/place/?q=place_id:${selectedRestaurant.id}`} 
                   target="_blank" 
@@ -558,6 +594,7 @@ const WheelOfLunch = () => {
                 onClick={spinWheel}
                 disabled={isSpinning}
                 className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg flex items-center transition-colors"
+                type="button"
               >
                 <RefreshCw size={16} className="mr-2" />
                 New Pick
@@ -566,6 +603,11 @@ const WheelOfLunch = () => {
           </div>
         </div>
       )}
+      
+      <div className="mt-6 text-sm text-gray-600 max-w-md text-center">
+        <p>Note: This is a demonstration. In a production app, you would use the Google Places API 
+        to fetch real restaurant data based on your location.</p>
+      </div>
     </div>
   );
 };
