@@ -170,6 +170,7 @@ const WheelOfLunch = () => {
   }
   
   // Update wheel when restaurants change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (restaurants.length > 0 && canvasRef.current) {
       drawWheel();
