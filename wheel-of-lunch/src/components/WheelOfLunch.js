@@ -108,8 +108,8 @@ const WheelOfLunch = () => {
     }
   }, [userLocation, restaurants.length, isLocationLocked, isUsingZipCode, zipCode]);
   
-  // Function to draw the wheel
-  function drawWheel() {
+  // Function to draw the wheel - defined with useRef to avoid dependency issues
+  const drawWheelRef = useRef((restaurantsData = restaurants) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
@@ -122,12 +122,12 @@ const WheelOfLunch = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // Draw wheel segments
-    const totalSlices = restaurants.length;
+    const totalSlices = restaurantsData.length;
     if (totalSlices === 0) return;
     
     const anglePerSlice = (2 * Math.PI) / totalSlices;
     
-    restaurants.forEach((restaurant, index) => {
+    restaurantsData.forEach((restaurant, index) => {
       // Calculate start and end angles
       const startAngle = index * anglePerSlice;
       const endAngle = (index + 1) * anglePerSlice;
@@ -167,10 +167,77 @@ const WheelOfLunch = () => {
     ctx.closePath();
     ctx.fillStyle = '#FF4136';
     ctx.fill();
+  });
+  
+  // Update drawWheelRef.current when restaurants or colors change
+  useEffect(() => {
+    drawWheelRef.current = (restaurantsData = restaurants) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      
+      const ctx = canvas.getContext('2d');
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const radius = Math.min(centerX, centerY) - 10;
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw wheel segments
+      const totalSlices = restaurantsData.length;
+      if (totalSlices === 0) return;
+      
+      const anglePerSlice = (2 * Math.PI) / totalSlices;
+      
+      restaurantsData.forEach((restaurant, index) => {
+        // Calculate start and end angles
+        const startAngle = index * anglePerSlice;
+        const endAngle = (index + 1) * anglePerSlice;
+        
+        // Draw segment
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+        ctx.closePath();
+        
+        // Fill segment
+        ctx.fillStyle = colors[index % colors.length];
+        ctx.fill();
+        
+        // Add restaurant name
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(startAngle + anglePerSlice / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 14px Arial';
+        ctx.fillText(restaurant.name, radius - 20, 5);
+        ctx.restore();
+      });
+      
+      // Draw center circle
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
+      ctx.fillStyle = '#333';
+      ctx.fill();
+      
+      // Draw pointer
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY - 30);
+      ctx.lineTo(centerX - 10, centerY - 60);
+      ctx.lineTo(centerX + 10, centerY - 60);
+      ctx.closePath();
+      ctx.fillStyle = '#FF4136';
+      ctx.fill();
+    };
+  }, [restaurants, colors]);
+  
+  // Helper function to call the ref's current value
+  function drawWheel() {
+    drawWheelRef.current();
   }
   
   // Update wheel when restaurants change
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (restaurants.length > 0 && canvasRef.current) {
       drawWheel();
@@ -271,55 +338,9 @@ const WheelOfLunch = () => {
       ctx.rotate(rotation);
       ctx.translate(-centerX, -centerY);
       
-      // Draw wheel without the pointer
-      const tempDrawWheel = () => {
-        if (!canvas) return;
-        
-        const ctx = canvas.getContext('2d');
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        const radius = Math.min(centerX, centerY) - 10;
-        
-        // Draw wheel segments
-        const totalSlices = restaurants.length;
-        if (totalSlices === 0) return;
-        
-        const anglePerSlice = (2 * Math.PI) / totalSlices;
-        
-        restaurants.forEach((restaurant, index) => {
-          // Calculate start and end angles
-          const startAngle = index * anglePerSlice;
-          const endAngle = (index + 1) * anglePerSlice;
-          
-          // Draw segment
-          ctx.beginPath();
-          ctx.moveTo(centerX, centerY);
-          ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-          ctx.closePath();
-          
-          // Fill segment
-          ctx.fillStyle = colors[index % colors.length];
-          ctx.fill();
-          
-          // Add restaurant name
-          ctx.save();
-          ctx.translate(centerX, centerY);
-          ctx.rotate(startAngle + anglePerSlice / 2);
-          ctx.textAlign = 'right';
-          ctx.fillStyle = '#fff';
-          ctx.font = 'bold 14px Arial';
-          ctx.fillText(restaurant.name, radius - 20, 5);
-          ctx.restore();
-        });
-        
-        // Draw center circle
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
-        ctx.fillStyle = '#333';
-        ctx.fill();
-      };
+      // Draw wheel without the pointer during animation
+      drawWheelRef.current(restaurants);
       
-      tempDrawWheel();
       ctx.restore();
       
       // Draw pointer (not rotating)
