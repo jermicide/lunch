@@ -461,6 +461,7 @@ const WheelOfLunch = () => {
               setUserLocation(null);
             }}
             className="mt-2 text-sm text-blue-600 hover:underline"
+            type="button"
           >
             Use ZIP code instead
           </button>
@@ -550,11 +551,6 @@ const WheelOfLunch = () => {
           </div>
         </div>
       )}
-      
-      <div className="mt-6 text-sm text-gray-600 max-w-md text-center">
-        <p>Note: This is a demonstration. In a production app, you would use the Google Places API 
-        to fetch real restaurant data based on the user's location.</p>
-      </div>
     </div>
   );
 };

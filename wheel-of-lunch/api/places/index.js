@@ -61,7 +61,7 @@ module.exports = async function (context, req) {
         const baseUrl = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json';
         const params = {
             location: `${lat},${lng}`,
-            radius: 1500,
+            radius: 5000,
             type: 'restaurant',
             key: GOOGLE_API_KEY
         };
