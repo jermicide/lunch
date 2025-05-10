@@ -506,8 +506,8 @@ const WheelOfLunch = () => {
             type="range"
             id="radius-slider"
             min="800"
-            max="5000"
-            step="100"
+            max="10000"
+            step="500"
             value={searchRadius}
             onChange={handleRadiusChange}
             className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
@@ -649,10 +649,6 @@ const WheelOfLunch = () => {
         </div>
       )}
       
-      <div className="mt-6 text-sm text-gray-600 max-w-md text-center">
-        <p>Note: This is a demonstration. In a production app, you would use the Google Places API 
-        to fetch real restaurant data based on your location.</p>
-      </div>
     </div>
   );
 };
