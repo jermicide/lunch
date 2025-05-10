@@ -36,22 +36,12 @@ module.exports = async function (context, req) {
         }
         
         const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
-        const GOOGLE_SIGNING_SECRET = process.env.GOOGLE_SIGNING_SECRET;
         
         if (!GOOGLE_API_KEY) {
             context.log.error("Missing Google API Key configuration");
             context.res = {
                 status: 500,
                 body: { error: "Server configuration error - missing API key" }
-            };
-            return;
-        }
-        
-        if (!GOOGLE_SIGNING_SECRET) {
-            context.log.error("Missing Google Signing Secret configuration");
-            context.res = {
-                status: 500,
-                body: { error: "Server configuration error - missing signing secret" }
             };
             return;
         }
@@ -63,12 +53,8 @@ module.exports = async function (context, req) {
             key: GOOGLE_API_KEY
         };
         
-        // Create the URL string
-        const paramString = querystring.stringify(params);
-        const urlToSign = `${baseUrl}?${paramString}`;
-        
         // Sign the URL
-        const signedUrl = signUrl(urlToSign, GOOGLE_SIGNING_SECRET);
+        const signedUrl = `${baseUrl}?${paramString}`;
         
         context.log(`Geocoding ZIP code: ${zipCode} with signed URL`);
         
