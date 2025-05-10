@@ -1,0 +1,24 @@
+{
+    "routes": [
+      {
+        "route": "/api/places",
+        "methods": ["GET"],
+        "allowedRoles": ["anonymous"]
+      },
+      {
+        "route": "/api/geocode",
+        "methods": ["GET"],
+        "allowedRoles": ["anonymous"]
+      }
+    ],
+    "navigationFallback": {
+      "rewrite": "/index.html",
+      "exclude": ["/images/*.{png,jpg,gif}", "/css/*", "/api/*"]
+    },
+    "responseOverrides": {
+      "404": {
+        "rewrite": "/index.html",
+        "statusCode": 200
+      }
+    }
+  }
