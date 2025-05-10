@@ -1,8 +1,28 @@
-// API function for proxying Google Geocoding API requests
+// API function for proxying Google Geocoding API requests with URL signing
 const axios = require('axios');
+const crypto = require('crypto');
+const querystring = require('querystring');
+
+// Function to sign a URL with your API key
+function signUrl(urlToSign, secretKey) {
+  // Convert the URL to be signed from a string to a URL object
+  const parsedUrl = new URL(urlToSign);
+  
+  // Get the path with query parameters
+  const pathWithQuery = parsedUrl.pathname + parsedUrl.search;
+  
+  // Create a signature using HMAC-SHA1
+  const signature = crypto.createHmac('sha1', Buffer.from(secretKey, 'base64'))
+                         .update(pathWithQuery)
+                         .digest('base64');
+  
+  // Add the signature to the URL
+  const signedUrl = `${urlToSign}&signature=${encodeURIComponent(signature)}`;
+  return signedUrl;
+}
 
 module.exports = async function (context, req) {
-    context.log('Processing geocode API request');
+    context.log('Processing geocode API request with URL signing');
     
     try {
         const { zipCode } = req.query;
@@ -16,20 +36,44 @@ module.exports = async function (context, req) {
         }
         
         const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+        const GOOGLE_SIGNING_SECRET = process.env.GOOGLE_SIGNING_SECRET;
+        
         if (!GOOGLE_API_KEY) {
             context.log.error("Missing Google API Key configuration");
             context.res = {
                 status: 500,
-                body: { error: "Server configuration error" }
+                body: { error: "Server configuration error - missing API key" }
             };
             return;
         }
         
-        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(zipCode)}&key=${GOOGLE_API_KEY}`;
+        if (!GOOGLE_SIGNING_SECRET) {
+            context.log.error("Missing Google Signing Secret configuration");
+            context.res = {
+                status: 500,
+                body: { error: "Server configuration error - missing signing secret" }
+            };
+            return;
+        }
         
-        context.log(`Geocoding ZIP code: ${zipCode}`);
+        // Build the base URL with parameters
+        const baseUrl = 'https://maps.googleapis.com/maps/api/geocode/json';
+        const params = {
+            address: zipCode,
+            key: GOOGLE_API_KEY
+        };
         
-        const response = await axios.get(url);
+        // Create the URL string
+        const paramString = querystring.stringify(params);
+        const urlToSign = `${baseUrl}?${paramString}`;
+        
+        // Sign the URL
+        const signedUrl = signUrl(urlToSign, GOOGLE_SIGNING_SECRET);
+        
+        context.log(`Geocoding ZIP code: ${zipCode} with signed URL`);
+        
+        // Make the request with the signed URL
+        const response = await axios.get(signedUrl);
         const data = response.data;
         
         // Check if the geocoding was successful
@@ -49,19 +93,25 @@ module.exports = async function (context, req) {
         context.res = {
             status: 200,
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*' // Enable CORS
             },
             body: data
         };
         
     } catch (error) {
         context.log.error(`Error in geocode API: ${error.message}`);
+        if (error.response) {
+            context.log.error(`Response status: ${error.response.status}`);
+            context.log.error(`Response data: ${JSON.stringify(error.response.data)}`);
+        }
         context.res = {
             status: 500,
             body: { 
                 error: "Failed to geocode ZIP code", 
                 details: error.message,
-                stack: error.stack
+                stack: error.stack,
+                responseData: error.response ? error.response.data : null
             }
         };
     }
