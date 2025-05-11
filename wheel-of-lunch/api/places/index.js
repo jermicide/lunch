@@ -1,8 +1,7 @@
-// API function for proxying Google Places API v2 requests
-const axios = require('axios');
+const { Client } = require('@googlemaps/google-maps-services-js');
 
 module.exports = async function (context, req) {
-    context.log('Processing places API v2 request');
+    context.log('Processing places SDK request');
     
     try {
         const { lat, lng, radius = 1500 } = req.query;
@@ -16,7 +15,7 @@ module.exports = async function (context, req) {
         }
         
         // Parse radius as a number and ensure it's within reasonable limits
-        const searchRadius = Math.min(Math.max(Number(radius) || 1500, 500), 5000);
+        const searchRadius = Math.min(Math.max(Number(radius) || 1500, 500), 50000);
         
         const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
         if (!GOOGLE_API_KEY) {
@@ -28,59 +27,43 @@ module.exports = async function (context, req) {
             return;
         }
         
-        // Using Google Places API v2 for nearby search
-        const url = 'https://places.googleapis.com/v2/places:searchNearby';
+        context.log(`Fetching places near ${lat},${lng} with radius ${searchRadius}m using Places SDK`);
         
-        context.log(`Fetching places near ${lat},${lng} with radius ${searchRadius}m using Places API v2`);
+        // Initialize Google Maps client
+        const client = new Client({});
         
-        // Build the request payload for Places API v2
-        const requestPayload = {
-            includedTypes: ["restaurant", "cafe", "bakery", "meal_takeaway", "meal_delivery"],
-            maxResultCount: 20,
-            locationRestriction: {
-                circle: {
-                    center: {
-                        latitude: parseFloat(lat),
-                        longitude: parseFloat(lng)
-                    },
-                    radius: searchRadius
-                }
-            },
-            rankPreference: "DISTANCE",
-            languageCode: "en"
-        };
-        
-        // Make the request to Places API v2
-        const response = await axios({
-            method: 'POST',
-            url: url,
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Goog-Api-Key': GOOGLE_API_KEY,
-                'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.priceLevel,places.primaryType,places.businessStatus,places.primaryTypeDisplayName,places.editorialSummary,places.photos'
-            },
-            data: requestPayload
+        // Perform nearby search using Places SDK
+        const response = await client.placesNearby({
+            params: {
+                location: { lat: parseFloat(lat), lng: parseFloat(lng) },
+                radius: searchRadius,
+                type: ['restaurant', 'cafe', 'bakery', 'meal_takeaway', 'meal_delivery'],
+                key: GOOGLE_API_KEY,
+                rankby: 'distance',
+                language: 'en'
+            }
         });
         
         const data = response.data;
         
-        context.log(`Places API v2 Response - Places found: ${data.places ? data.places.length : 0}`);
+        context.log(`Places SDK Response - Places found: ${data.results ? data.results.length : 0}`);
         
         // Handle error responses from Google
-        if (data.error) {
-            context.log.error(`Google Places API v2 error: ${JSON.stringify(data.error)}`);
+        if (data.status !== 'OK') {
+            context.log.error(`Google Places SDK error: ${data.status} - ${data.error_message || 'Unknown error'}`);
             context.res = {
-                status: data.error.code || 500,
+                status: 500,
                 body: { 
-                    error: "Google Places API error", 
-                    details: data.error.message || "Error fetching places"
+                    error: "Google Places SDK error", 
+                    details: data.error_message || "Error fetching places",
+                    status: data.status
                 }
             };
             return;
         }
         
         // Handle case where no places were found
-        if (!data.places || data.places.length === 0) {
+        if (!data.results || data.results.length === 0) {
             context.res = {
                 status: 200,
                 headers: {
@@ -92,18 +75,38 @@ module.exports = async function (context, req) {
             return;
         }
         
-        // Return the API v2 response directly - its format already matches our app's expected structure
+        // Map SDK response to match the app's expected structure
+        const places = data.results.map(place => ({
+            id: place.place_id,
+            displayName: place.name,
+            formattedAddress: place.vicinity,
+            location: {
+                latitude: place.geometry.location.lat,
+                longitude: place.geometry.location.lng
+            },
+            rating: place.rating,
+            userRatingCount: place.user_ratings_total,
+            priceLevel: place.price_level,
+            primaryType: place.types[0],
+            businessStatus: place.business_status,
+            photos: place.photos ? place.photos.map(photo => ({
+                name: photo.photo_reference,
+                widthPx: photo.width,
+                heightPx: photo.height
+            })) : []
+        }));
+        
         context.res = {
             status: 200,
             headers: {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            body: data
+            body: { places }
         };
         
     } catch (error) {
-        context.log.error(`Error in places API v2: ${error.message}`);
+        context.log.error(`Error in places SDK: ${error.message}`);
         if (error.response) {
             context.log.error(`Response status: ${error.response.status}`);
             context.log.error(`Response data: ${JSON.stringify(error.response.data)}`);
