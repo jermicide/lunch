@@ -6,10 +6,15 @@ module.exports = async function (context, req) {
     try {
         const { lat, lng, radius = 1500 } = req.query;
         
-        if (!lat || !lng) {
+        // Validate latitude and longitude
+        const latitude = parseFloat(lat);
+        const longitude = parseFloat(lng);
+        if (isNaN(latitude) || isNaN(longitude) || 
+            latitude < -90 || latitude > 90 || 
+            longitude < -180 || longitude > 180) {
             context.res = {
                 status: 400,
-                body: { error: "Missing location coordinates" }
+                body: { error: "Invalid or missing location coordinates" }
             };
             return;
         }
@@ -27,32 +32,40 @@ module.exports = async function (context, req) {
             return;
         }
         
-        context.log(`Fetching places near ${lat},${lng} with radius ${searchRadius}m using Places SDK`);
+        context.log(`Fetching places near ${latitude},${longitude} with radius ${searchRadius}m using Places SDK`);
         
         // Initialize Google Maps client
         const client = new Client({});
         
         // Perform nearby search using Places SDK
-        const response = await client.placesNearby({
-            params: {
-                location: { lat: parseFloat(lat), lng: parseFloat(lng) },
-                radius: searchRadius,
-                type: ['restaurant', 'cafe', 'bakery', 'meal_takeaway', 'meal_delivery'],
-                key: GOOGLE_API_KEY,
-                rankby: 'distance',
-                language: 'en'
-            }
-        });
+        const params = {
+            location: { lat: latitude, lng: longitude },
+            type: 'restaurant', // Single type as required by API
+            keyword: 'restaurant cafe bakery meal_takeaway meal_delivery', // Broaden search
+            key: GOOGLE_API_KEY,
+            language: 'en'
+        };
+
+        // Use radius or rankby:distance, not both
+        if (req.query.rankBy === 'distance') {
+            params.rankby = 'distance';
+        } else {
+            params.radius = searchRadius;
+        }
+
+        context.log(`Places SDK request params: ${JSON.stringify(params, null, 2)}`);
+        
+        const response = await client.placesNearby({ params });
         
         const data = response.data;
         
-        context.log(`Places SDK Response - Places found: ${data.results ? data.results.length : 0}`);
+        context.log(`Places SDK Response - Status: ${data.status}, Places found: ${data.results ? data.results.length : 0}`);
         
         // Handle error responses from Google
-        if (data.status !== 'OK') {
+        if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
             context.log.error(`Google Places SDK error: ${data.status} - ${data.error_message || 'Unknown error'}`);
             context.res = {
-                status: 500,
+                status: 400,
                 body: { 
                     error: "Google Places SDK error", 
                     details: data.error_message || "Error fetching places",
@@ -109,7 +122,7 @@ module.exports = async function (context, req) {
         context.log.error(`Error in places SDK: ${error.message}`);
         if (error.response) {
             context.log.error(`Response status: ${error.response.status}`);
-            context.log.error(`Response data: ${JSON.stringify(error.response.data)}`);
+            context.log.error(`Response data: ${JSON.stringify(error.response.data, null, 2)}`);
         }
         context.res = {
             status: 500,
