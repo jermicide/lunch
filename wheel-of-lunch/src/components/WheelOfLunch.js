@@ -12,7 +12,7 @@ const WheelOfLunch = () => {
   const [zipCode, setZipCode] = useState('');
   const [isUsingZipCode, setIsUsingZipCode] = useState(false);
   const [locationError, setLocationError] = useState(null);
-  const [searchRadius, setSearchRadius] = useState(1500); // Default radius in meters
+  const [searchRadius, setSearchRadius] = useState(10000); // Default radius in meters
   const canvasRef = useRef(null);
   
   // Colors for the wheel segments - memoized to prevent unnecessary re-renders
@@ -74,7 +74,7 @@ const WheelOfLunch = () => {
     }
   }, [locationError, userLocation]);
   
-  // Using Google Places API to fetch restaurants
+  // Using Google Places API v2 to fetch restaurants
   useEffect(() => {
     if (userLocation && restaurants.length === 0 && !isLocationLocked) {
       setStatus('Finding nearby restaurants...');
@@ -92,13 +92,13 @@ const WheelOfLunch = () => {
           
           const data = await response.json();
           
-          // Process the Places API response
+          // Process the Places API v2 response
           if (!data.places || !Array.isArray(data.places) || data.places.length === 0) {
             setStatus('No restaurants found in this area. Try a different location or increase your search radius.');
             return;
           }
           
-          // Format the response to our app's structure
+          // Format the response to our app's structure - Places API v2 response format
           const formattedRestaurants = data.places.map(place => {
             // Convert price level from string to number for display
             const priceMap = {
@@ -117,9 +117,10 @@ const WheelOfLunch = () => {
               address: place.formattedAddress || '',
               photo_reference: place.photos?.[0]?.name || null,
               review_count: place.userRatingCount || 0,
-              category: place.primaryTypeDisplayName?.text || 'Restaurant',
+              category: place.primaryTypeDisplayName?.text || place.primaryType || 'Restaurant',
               description: place.editorialSummary?.text || '',
-              business_status: place.businessStatus || 'OPERATIONAL'
+              business_status: place.businessStatus || 'OPERATIONAL',
+              location: place.location
             };
           });
           
@@ -457,6 +458,38 @@ const WheelOfLunch = () => {
       setSelectedRestaurant(null);
     }
   }
+  // Function to calculate distance between two points using Haversine formula
+  function calculateDistance(point1, point2) {
+    // If we're using the location format from Places API v2
+    const lat1 = point1.lat || point1.latitude;
+    const lng1 = point1.lng || point1.longitude;
+    const lat2 = point2.lat || point2.latitude;
+    const lng2 = point2.lng || point2.longitude;
+    
+    // Radius of the Earth in miles
+    const earthRadius = 3958.8;
+    
+    // Convert latitude and longitude from degrees to radians
+    const latRad1 = (lat1 * Math.PI) / 180;
+    const lngRad1 = (lng1 * Math.PI) / 180;
+    const latRad2 = (lat2 * Math.PI) / 180;
+    const lngRad2 = (lng2 * Math.PI) / 180;
+    
+    // Differences in coordinates
+    const diffLat = latRad2 - latRad1;
+    const diffLng = lngRad2 - lngRad1;
+    
+    // Haversine formula
+    const a = 
+      Math.sin(diffLat / 2) * Math.sin(diffLat / 2) +
+      Math.cos(latRad1) * Math.cos(latRad2) * 
+      Math.sin(diffLng / 2) * Math.sin(diffLng / 2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = earthRadius * c;
+    
+    return distance;
+  }
 
   return (
     <div className="flex flex-col items-center p-4 max-w-4xl mx-auto">
@@ -605,23 +638,47 @@ const WheelOfLunch = () => {
           <h2 className="text-xl font-bold text-center mb-3">Your Lunch Pick:</h2>
           <div className="text-center">
             <p className="text-3xl font-bold text-green-700 mb-2">{selectedRestaurant.name}</p>
+            
+            {/* Rating and Price Information */}
             <div className="flex justify-center items-center mb-2">
-              <span className="text-yellow-500 font-bold mr-1">{selectedRestaurant.rating}</span>
-              <span className="text-yellow-500">★</span>
-              <span className="text-gray-500 text-sm ml-1">({selectedRestaurant.review_count} reviews)</span>
-              <span className="mx-2 text-gray-400">|</span>
-              <span className="text-gray-800 font-medium">{"$".repeat(selectedRestaurant.price_level)}</span>
+              {selectedRestaurant.rating > 0 && (
+                <>
+                  <span className="text-yellow-500 font-bold mr-1">{selectedRestaurant.rating.toFixed(1)}</span>
+                  <span className="text-yellow-500">★</span>
+                  <span className="text-gray-500 text-sm ml-1">({selectedRestaurant.review_count} reviews)</span>
+                  <span className="mx-2 text-gray-400">|</span>
+                </>
+              )}
+              <span className="text-gray-800 font-medium">{selectedRestaurant.price_level > 0 ? "$".repeat(selectedRestaurant.price_level) : "Price N/A"}</span>
             </div>
             
-            <p className="text-blue-600 font-semibold mb-1">{selectedRestaurant.category}</p>
+            {/* Category and Address */}
+            {selectedRestaurant.category && (
+              <p className="text-blue-600 font-semibold mb-1">{selectedRestaurant.category}</p>
+            )}
             <p className="text-gray-600 text-sm mb-3">{selectedRestaurant.address}</p>
             
+            {/* Business Status Indicator */}
+            {selectedRestaurant.business_status && (
+              <div className={`inline-block px-2 py-1 rounded-full text-xs font-medium mb-3 ${
+                selectedRestaurant.business_status === 'OPERATIONAL' ? 'bg-green-100 text-green-800' :
+                selectedRestaurant.business_status === 'CLOSED_TEMPORARILY' ? 'bg-yellow-100 text-yellow-800' :
+                'bg-red-100 text-red-800'
+              }`}>
+                {selectedRestaurant.business_status === 'OPERATIONAL' ? 'Open' :
+                 selectedRestaurant.business_status === 'CLOSED_TEMPORARILY' ? 'Temporarily Closed' :
+                 'Permanently Closed'}
+              </div>
+            )}
+            
+            {/* Description */}
             {selectedRestaurant.description && (
               <div className="bg-gray-50 p-3 rounded text-sm text-gray-700 italic mb-4">
                 "{selectedRestaurant.description}"
               </div>
             )}
             
+            {/* Action Buttons */}
             <div className="flex justify-center gap-3">
               {selectedRestaurant.id && (
                 <a 
@@ -644,6 +701,13 @@ const WheelOfLunch = () => {
                 New Pick
               </button>
             </div>
+            
+            {/* Distance Information (if available from Places API v2) */}
+            {selectedRestaurant.location && userLocation && (
+              <div className="mt-3 text-xs text-gray-500">
+                Approximately {calculateDistance(userLocation, selectedRestaurant.location).toFixed(1)} miles away
+              </div>
+            )}
           </div>
         </div>
       )}
