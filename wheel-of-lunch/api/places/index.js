@@ -41,7 +41,6 @@ module.exports = async function (context, req) {
         const params = {
             location: { lat: latitude, lng: longitude },
             type: 'restaurant', // Single type as required by API
-            keyword: 'restaurant cafe bakery meal_takeaway meal_delivery', // Broaden search
             key: GOOGLE_API_KEY,
             language: 'en'
         };
