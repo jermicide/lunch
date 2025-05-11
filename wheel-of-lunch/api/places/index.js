@@ -123,7 +123,9 @@ module.exports = async function (context, req) {
             status: 200,
             headers: {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*' // Enable CORS
+                'Access-Control-Allow-Origin': '*', // Enable CORS
+                'X-API-STATUS': data.status,
+                'X-API-RESULT-COUNT': data.results ? data.results.length : '0'
             },
             body: transformedResponse
         };

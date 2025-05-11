@@ -84,8 +84,8 @@ module.exports = async function (context, req) {
                     // Sign the URL
                     const signedUrl = signUrl(urlToSign, process.env.GOOGLE_SIGNING_SECRET);
                     
-                    if (signedUrl) {
-                        const signedResponse = await axios.get(signedUrl);
+                    if (urlToSign) {
+                        const signedResponse = await axios.get(urlToSign);
                         urlSigningTest = {
                             status: signedResponse.status,
                             googleStatus: signedResponse.data.status,
