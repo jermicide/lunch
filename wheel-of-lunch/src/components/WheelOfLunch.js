@@ -505,20 +505,19 @@ const WheelOfLunch = () => {
           <input
             type="range"
             id="radius-slider"
-            min="800"
-            max="10000"
+            min="2000"
+            max="32000"
             step="500"
             value={searchRadius}
             onChange={handleRadiusChange}
             className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
           />
           <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>0.5 mi</span>
             <span>1 mi</span>
-            <span>1.5 mi</span>
-            <span>2 mi</span>
-            <span>2.5 mi</span>
-            <span>3 mi</span>
+            <span>5 mi</span>
+            <span>10 mi</span>
+            <span>15 mi</span>
+            <span>20 mi</span>
           </div>
         </div>
         
