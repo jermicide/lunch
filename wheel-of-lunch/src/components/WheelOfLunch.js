@@ -75,7 +75,6 @@ const WheelOfLunch = () => {
       
       const fetchRestaurants = async () => {
         try {
-          // Build query string with rankBy parameter
           const queryParams = new URLSearchParams({
             lat: userLocation.lat,
             lng: userLocation.lng,
@@ -92,18 +91,15 @@ const WheelOfLunch = () => {
           
           const data = await response.json();
           
-          // Handle error responses from Azure Function
           if (data.error) {
             throw new Error(data.details || data.error);
           }
           
-          // Process the Places SDK response
           if (!data.places || !Array.isArray(data.places) || data.places.length === 0) {
             setStatus('No restaurants found in this area. Try a different location or increase your search radius.');
             return;
           }
           
-          // Format the response to our app's structure
           const formattedRestaurants = data.places.map(place => ({
             id: place.id || `place-${Math.random().toString(36).substring(2, 9)}`,
             name: place.displayName || 'Unnamed Restaurant',
@@ -113,7 +109,7 @@ const WheelOfLunch = () => {
             photo_reference: place.photos?.[0]?.name || null,
             review_count: place.userRatingCount || 0,
             category: place.primaryType || 'Restaurant',
-            description: '', // Not available in SDK's placesNearby
+            description: '',
             business_status: place.businessStatus || 'OPERATIONAL',
             location: place.location
           }));
@@ -353,7 +349,17 @@ const WheelOfLunch = () => {
     setSelectedRestaurant(null);
     setStatus('Spinning the wheel...');
     
-    const spinTime = 3000;
+    // Select random restaurant at the start
+    const randomIndex = Math.floor(Math.random() * restaurants.length);
+    const totalSlices = restaurants.length;
+    const anglePerSlice = (2 * Math.PI) / totalSlices;
+    
+    // Calculate the final angle to align the selected restaurant's segment with the pointer
+    const segmentMidpoint = randomIndex * anglePerSlice + anglePerSlice / 2;
+    const fullRotations = Math.floor(Math.random() * 5) + 5; // 5–9 full rotations
+    const finalAngle = -segmentMidpoint + fullRotations * 2 * Math.PI;
+    
+    const spinTime = 3000; // 3 seconds
     const startTime = Date.now();
     
     const animateSpin = () => {
@@ -372,7 +378,8 @@ const WheelOfLunch = () => {
       
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      const rotation = 10 * Math.PI + (1 - Math.pow(1 - progress, 3)) * 20 * Math.PI;
+      // Apply easing to smoothly approach finalAngle
+      const rotation = (1 - Math.pow(1 - progress, 3)) * finalAngle;
       
       ctx.save();
       ctx.translate(centerX, centerY);
@@ -383,6 +390,7 @@ const WheelOfLunch = () => {
       
       ctx.restore();
       
+      // Draw pointer (not rotating)
       ctx.beginPath();
       ctx.moveTo(centerX, centerY - 30);
       ctx.lineTo(centerX - 10, centerY - 60);
@@ -394,8 +402,8 @@ const WheelOfLunch = () => {
       if (progress < 1) {
         requestAnimationFrame(animateSpin);
       } else {
+        // Spinning complete
         setIsSpinning(false);
-        const randomIndex = Math.floor(Math.random() * restaurants.length);
         setSelectedRestaurant(restaurants[randomIndex]);
         setStatus(`Your lunch destination: ${restaurants[randomIndex].name}`);
       }
