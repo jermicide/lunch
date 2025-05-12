@@ -465,7 +465,7 @@ const WheelOfLunch = () => {
 
   return (
     <div className="flex flex-col items-center p-4 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-center mb-6">Wheel of Lunch</h1>
+      <h1 className="text-3xl font-bold text-center mb-6">Lakey's Wheel of Lunch</h1>
       
       <div className="bg-gray-100 w-full p-4 rounded-lg mb-6">
         <p className="text-lg font-semibold">{status}</p>
