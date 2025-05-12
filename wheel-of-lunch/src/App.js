@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import WheelOfLunch from './components/WheelOfLunch';
+import WheelOfLunch from './WheelOfLunch';
 
 function App() {
   return (
