@@ -151,6 +151,7 @@ const SpinningWheel = ({
   }, [restaurants]);
   
   // Function to perform wheel spin animation
+  // eslint-disable-next-line
   const handleSpin = () => {
     // Forward the spin request to parent
     spinWheel();
