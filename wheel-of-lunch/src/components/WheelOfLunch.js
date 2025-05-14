@@ -407,10 +407,12 @@ const WheelOfLunch = () => {
         setIsSpinning(false);
         setSelectedRestaurant(restaurants[randomIndex]);
         setStatus(`Your lunch destination: ${restaurants[randomIndex].name}`);
-        // Scroll to results card
-        if (document.documentElement) {
-          document.documentElement.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
-        }
+        // Scroll to results card after a short delay to ensure the element is rendered
+        setTimeout(() => {
+          if (resultsRef.current) {
+            resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
       }
     };
 
