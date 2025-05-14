@@ -3,6 +3,7 @@ import { RefreshCw, Map, Lock, Unlock } from 'lucide-react';
 
 const WheelOfLunch = () => {
   // State definitions
+  const [darkMode, setDarkMode] = useState(false);
   const [restaurants, setRestaurants] = useState([]);
   const [isSpinning, setIsSpinning] = useState(false);
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
@@ -450,6 +451,11 @@ const WheelOfLunch = () => {
     return distance;
   }
 
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
+
   return (
     <div className="flex flex-col items-center p-4 max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold text-center mb-6">Lakey's Wheel of Lunch</h1>
@@ -469,6 +475,21 @@ const WheelOfLunch = () => {
             </p>
             <div className="flex gap-2">
               {isUsingZipCode && (
+                 <button
+                  onClick={toggleDarkMode}
+                  className={`px-3 py-2 rounded ${
+                    darkMode
+                      ? 'bg-gray-700 text-white hover:bg-gray-600'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                  type="button"
+                >
+                  {darkMode ? 'Light Mode' : 'Dark Mode'}
+                </button>
+
+              )}
+            {isUsingZipCode && (
+
                 <button
                   onClick={switchToBrowserLocation}
                   className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -581,11 +602,14 @@ const WheelOfLunch = () => {
       </div>
 
       <div className="mb-6 relative">
-        <canvas
+       <button
+          onClick={toggleDarkMode}
+          className="mb-2 px-3 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+        
+          {...darkMode ? 'Light Mode' : 'Dark Mode'}
           ref={canvasRef}
           width={400}
           height={400}
-          className="border rounded-full shadow-lg"
         />
       </div>
 
@@ -618,8 +642,12 @@ const WheelOfLunch = () => {
 
       {selectedRestaurant && (
         <div
-          ref={resultsRef} // Attach ref to results card
-          className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md border-t-4 border-green-500 mb-6 animate-fade-in"
+        className={`bg-white p-6 rounded-lg shadow-lg w-full max-w-md border-t-4 border-green-500 mb-6 animate-fade-in ${
+          darkMode
+            ? 'bg-gray-800 text-white border-gray-700'
+            : 'bg-white text-gray-900'
+        }`}
+          ref={resultsRef}
         >
           <h2 className="text-xl font-bold text-center mb-3">Your Lunch Pick:</h2>
           <div className="text-center">
@@ -640,7 +668,7 @@ const WheelOfLunch = () => {
             {selectedRestaurant.category && (
               <p className="text-blue-600 font-semibold mb-1">{selectedRestaurant.category}</p>
             )}
-            <p className="text-gray-600 text-sm mb-3">{selectedRestaurant.address}</p>
+            <p className={`text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{selectedRestaurant.address}</p>
 
             {selectedRestaurant.business_status && (
               <div className={`inline-block px-2 py-1 rounded-full text-xs font-medium mb-3 ${
