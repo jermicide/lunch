@@ -409,10 +409,12 @@ const WheelOfLunch = () => {
         setStatus(`Your lunch destination: ${restaurants[randomIndex].name}`);
         // Scroll to results card after a short delay to ensure the element is rendered
         setTimeout(() => {
-          if (resultsRef.current) {
-            resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Scroll to bottom of page
+          if (document.documentElement) {
+            document.documentElement.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+            console.log("scrolling to bottom");
           }
-        });
+        },250);
       }
     };
 
