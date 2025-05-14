@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect x="0" y="0" width="1200" height="630" fill="#f8f9fa"/>
+  
+  <!-- Decorative elements -->
+  <rect x="0" y="0" width="1200" height="15" fill="#ff6b6b"/>
+  <rect x="0" y="15" width="1200" height="15" fill="#48dbfb"/>
+  <rect x="0" y="30" width="1200" height="15" fill="#1dd1a1"/>
+  <rect x="0" y="45" width="1200" height="15" fill="#feca57"/>
+  <rect x="0" y="60" width="1200" height="15" fill="#a29bfe"/>
+  
+  <!-- Large wheel in the background -->
+  <circle cx="300" cy="315" r="250" fill="#ffffff" stroke="#e5e5e5" stroke-width="2"/>
+  
+  <!-- Wheel segments -->
+  <path d="M300,315 L300,65 A250,250 0 0,1 516.5,141.5 Z" fill="#ff6b6b" opacity="0.7"/>
+  <path d="M300,315 L516.5,141.5 A250,250 0 0,1 516.5,488.5 Z" fill="#48dbfb" opacity="0.7"/>
+  <path d="M300,315 L516.5,488.5 A250,250 0 0,1 300,565 Z" fill="#1dd1a1" opacity="0.7"/>
+  <path d="M300,315 L300,565 A250,250 0 0,1 83.5,488.5 Z" fill="#feca57" opacity="0.7"/>
+  <path d="M300,315 L83.5,488.5 A250,250 0 0,1 83.5,141.5 Z" fill="#a29bfe" opacity="0.7"/>
+  <path d="M300,315 L83.5,141.5 A250,250 0 0,1 300,65 Z" fill="#54a0ff" opacity="0.7"/>
+  
+  <!-- Center point -->
+  <circle cx="300" cy="315" r="20" fill="#333333"/>
+  
+  <!-- Arrow indicator -->
+  <path d="M300,115 L325,165 L275,165 Z" fill="#333333"/>
+  
+  <!-- Text content -->
+  <text x="600" y="230" font-family="Arial, sans-serif" font-size="72" font-weight="bold" text-anchor="start" fill="#333333">Wheel of Lunch</text>
+  <text x="600" y="310" font-family="Arial, sans-serif" font-size="36" text-anchor="start" fill="#666666">Spin the wheel.</text>
+  <text x="600" y="360" font-family="Arial, sans-serif" font-size="36" text-anchor="start" fill="#666666">Discover your next meal.</text>
+  <text x="600" y="410" font-family="Arial, sans-serif" font-size="36" text-anchor="start" fill="#666666">Enjoy the surprise.</text>
+  
+  <!-- Website URL -->
+  <text x="600" y="500" font-family="Arial, sans-serif" font-size="28" font-weight="bold" text-anchor="start" fill="#333333">lunch.lakey.net</text>
+</svg>

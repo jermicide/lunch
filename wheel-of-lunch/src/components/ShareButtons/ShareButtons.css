@@ -1,0 +1,97 @@
+/* ShareButtons.css */
+.sharing-container {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 30px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  .sharing-container h3 {
+    margin-top: 0;
+    color: #333;
+    font-size: 1.5rem;
+  }
+  
+  .social-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 15px;
+  }
+  
+  .social-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+  
+  .social-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+  }
+  
+  .social-button:focus {
+    outline: 2px solid #0077ff;
+    outline-offset: 2px;
+  }
+  
+  .social-button.facebook {
+    background-color: #f0f2f5;
+  }
+  
+  .social-button.twitter {
+    background-color: #e6f3ff;
+  }
+  
+  .social-button.whatsapp {
+    background-color: #e7ffdb;
+  }
+  
+  .social-button.email {
+    background-color: #fce8e6;
+  }
+  
+  .social-button.copy-link {
+    background-color: #f0f0f0;
+  }
+  
+  .copy-success {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+    font-size: 14px;
+    animation: fadeInOut 2s ease-in-out;
+  }
+  
+  @keyframes fadeInOut {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  
+  @media (max-width: 600px) {
+    .social-buttons {
+      gap: 10px;
+    }
+    
+    .social-button {
+      width: 45px;
+      height: 45px;
+    }
+  }

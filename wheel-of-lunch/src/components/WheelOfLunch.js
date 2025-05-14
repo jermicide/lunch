@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { RefreshCw, Map, Lock, Unlock } from 'lucide-react';
+import ShareButtons from './ShareButtons';
 
 const WheelOfLunch = () => {
   // State definitions
@@ -682,6 +683,10 @@ const WheelOfLunch = () => {
                 New Pick
               </button>
             </div>
+            <ShareButtons 
+              restaurantName={selectedRestaurant.name} 
+              restaurantAddress={selectedRestaurant.address} 
+            />
 
             {selectedRestaurant.location && userLocation && (
               <div className="mt-3 text-xs text-gray-500">
