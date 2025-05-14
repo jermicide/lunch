@@ -13,7 +13,7 @@ const WheelOfLunch = () => {
   const [isUsingZipCode, setIsUsingZipCode] = useState(false);
   const [locationError, setLocationError] = useState(null);
   const [searchRadius, setSearchRadius] = useState(10000); // Default radius in meters
-  const [rankBy, setRankBy] = useState('radius'); // 'radius' or 'distance'
+  const [rankBy, setRankBy] = useState('distance'); // 'radius' or 'distance'
   const canvasRef = useRef(null);
   const resultsRef = useRef(null); // New ref for results card
 
@@ -492,7 +492,7 @@ const WheelOfLunch = () => {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Sort By:
           </label>
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center justify-between">
             <label className="flex items-center">
               <input
                 type="radio"
