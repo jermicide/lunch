@@ -488,11 +488,11 @@ const WheelOfLunch = () => {
           </div>
         )}
 
-        <div className="flex items-center justify-between mt-4 mb-2">
+        <div className="flex items-center mt-4 mb-2">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Sort By:
           </label>
-          <div className="flex gap-4 items-center justify-between">
+          <div className="flex gap-4 items-center">
             <label className="flex items-center">
               <input
                 type="radio"
