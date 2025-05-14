@@ -458,8 +458,8 @@ const WheelOfLunch = () => {
         <p className="text-lg font-semibold">{status}</p>
 
         {userLocation && (
-          <div className="flex items-center justify-between mt-2">
-            <p className="text-sm text-gray-600">
+          <div className="flex items-center justify-center mt-2">
+            <p className="text-sm text-gray-600 ">
               {isUsingZipCode ? (
                 <>Using zip code location</>
               ) : (
@@ -488,7 +488,7 @@ const WheelOfLunch = () => {
           </div>
         )}
 
-        <div className="flex mt-4 mb-2">
+        <div className="flex justify-center mt-4 mb-2">
           <div className="flex gap-4 items-center">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Sort By:
