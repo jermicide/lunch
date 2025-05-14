@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { ArrowDown, RefreshCw, Map, Lock, Unlock } from 'lucide-react';
+import { RefreshCw, Map, Lock, Unlock } from 'lucide-react';
 
 const WheelOfLunch = () => {
   // State definitions
