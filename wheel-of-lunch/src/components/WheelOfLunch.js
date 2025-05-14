@@ -378,15 +378,6 @@ const WheelOfLunch = () => {
 
       ctx.restore();
 
-      // Draw pointer (not rotating)
-      ctx.beginPath();
-      ctx.moveTo(centerX, centerY - 30);
-      ctx.lineTo(centerX - 10, centerY - 60);
-      ctx.lineTo(centerX + 10, centerY - 60);
-      ctx.closePath();
-      ctx.fillStyle = '#FF4136';
-      ctx.fill();
-
       if (progress < 1) {
         requestAnimationFrame(animateSpin);
       } else {
