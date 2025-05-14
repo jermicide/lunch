@@ -488,7 +488,7 @@ const WheelOfLunch = () => {
           </div>
         )}
 
-        <div className="mt-4 mb-2">
+        <div className="flex items-center justify-between mt-4 mb-2">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Sort By:
           </label>
