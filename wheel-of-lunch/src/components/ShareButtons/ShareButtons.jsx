@@ -20,10 +20,10 @@ const ShareButtons = ({ restaurantName, restaurantAddress }) => {
     window.open(shareUrl, '_blank', 'width=600,height=400');
   };
   
-  // Twitter/X sharing
+  // X (formerly Twitter) sharing
   const shareOnTwitter = () => {
     const content = getShareContent();
-    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(content.text)}&url=${encodeURIComponent(content.url)}`;
+    const shareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(content.text)}&url=${encodeURIComponent(content.url)}`;
     window.open(shareUrl, '_blank', 'width=600,height=400');
   };
   
@@ -86,14 +86,14 @@ const ShareButtons = ({ restaurantName, restaurantAddress }) => {
           </svg>
         </button>
         
-        {/* Twitter/X Share Button */}
+        {/* X (formerly Twitter) Share Button */}
         <button 
-          className="social-button twitter" 
+          className="social-button x-twitter" 
           onClick={shareOnTwitter}
-          aria-label="Share on Twitter"
+          aria-label="Share on X"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#1DA1F2">
-            <path d="M22.46 5.71C21.69 6.05 20.86 6.26 20 6.35C20.88 5.8 21.56 4.94 21.88 3.92C21.05 4.42 20.13 4.77 19.16 4.98C18.37 4.13 17.26 3.62 16 3.62C13.65 3.62 11.73 5.51 11.73 7.86C11.73 8.19 11.77 8.51 11.84 8.82C8.28 8.64 5.11 6.96 2.96 4.39C2.63 5.01 2.44 5.7 2.44 6.43C2.44 7.82 3.15 9.06 4.2 9.75C3.5 9.74 2.79 9.53 2.17 9.18V9.23C2.17 11.29 3.62 13.01 5.55 13.4C5.23 13.49 4.89 13.53 4.54 13.53C4.29 13.53 4.06 13.5 3.83 13.46C4.3 15.14 5.9 16.36 7.79 16.4C6.3 17.5 4.47 18.16 2.47 18.16C2.15 18.16 1.84 18.14 1.53 18.1C3.44 19.27 5.7 19.97 8.12 19.97C16 19.97 20.33 13.6 20.33 8.09C20.33 7.9 20.33 7.72 20.32 7.54C21.16 6.91 21.88 6.12 22.46 5.23V5.71Z"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#000000">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
           </svg>
         </button>
         
