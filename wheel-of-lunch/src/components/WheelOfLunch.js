@@ -258,13 +258,7 @@ const WheelOfLunch = () => {
     ctx.fillStyle = '#333';
     ctx.fill();
 
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY - 30);
-    ctx.lineTo(centerX - 10, centerY - 60);
-    ctx.lineTo(centerX + 10, centerY - 60);
-    ctx.closePath();
-    ctx.fillStyle = '#FF4136';
-    ctx.fill();
+
   });
 
   // Update drawWheelRef.current when restaurants or colors change
@@ -320,13 +314,6 @@ const WheelOfLunch = () => {
       ctx.fillStyle = '#333';
       ctx.fill();
 
-      ctx.beginPath();
-      ctx.moveTo(centerX, centerY - 30);
-      ctx.lineTo(centerX - 10, centerY - 60);
-      ctx.lineTo(centerX + 10, centerY - 60);
-      ctx.closePath();
-      ctx.fillStyle = '#FF4136';
-      ctx.fill();
     };
   }, [restaurants, colors]);
 
@@ -608,9 +595,6 @@ const WheelOfLunch = () => {
           height={400}
           className="border rounded-full shadow-lg"
         />
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2">
-          <ArrowDown size={40} color="#000" />
-        </div>
       </div>
 
       <div className="flex flex-wrap justify-center gap-4 mb-6">
