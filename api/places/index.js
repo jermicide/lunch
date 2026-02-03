@@ -204,7 +204,8 @@ async function handler(context, req) {
             `Filtered results: ${validResults.length} restaurants from ${data.results?.length || 0} total places`
         );
 
-        // Map and return valid restaurant places, filtering out any that failed mapping
+        // Map valid restaurant places to normalized format
+        // Some places may be filtered out if they're missing required fields (place_id, name, or location)
         const places = validResults
             .map(mapPlaceResponse)
             .filter(place => place !== null);
