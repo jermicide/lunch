@@ -75,9 +75,14 @@ function isValidRestaurant(place) {
 /**
  * Maps Google Places SDK response to normalized format
  * @param {Object} place
- * @returns {Object}
+ * @returns {Object|null}
  */
 function mapPlaceResponse(place) {
+    // Validate required fields exist
+    if (!place.place_id || !place.name || !place.geometry?.location?.lat || !place.geometry?.location?.lng) {
+        return null;
+    }
+
     return {
         id: place.place_id,
         displayName: place.name,
@@ -186,8 +191,11 @@ module.exports = async function (context, req) {
             `Filtered results: ${validResults.length} restaurants from ${data.results?.length || 0} total places`
         );
 
-        // Map and return valid restaurant places
-        const places = validResults.map(mapPlaceResponse);
+        // Map and return valid restaurant places, filtering out any that failed mapping
+        const places = validResults
+            .map(mapPlaceResponse)
+            .filter(place => place !== null);
+
 
         context.res = {
             status: 200,
