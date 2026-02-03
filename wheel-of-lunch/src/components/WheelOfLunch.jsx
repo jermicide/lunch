@@ -17,11 +17,11 @@ const WheelOfLunch = () => {
   const [rankBy, setRankBy] = useState('distance'); // 'radius' or 'distance'
   const canvasRef = useRef(null);
 
-  // Colors for the wheel segments - memoized to prevent unnecessary re-renders
+  // Colors for the wheel segments - Price is Right inspired vibrant colors - memoized to prevent unnecessary re-renders
   const colors = useMemo(() => [
-    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
-    '#9966FF', '#FF9F40', '#8AC926', '#1982C4',
-    '#6A4C93', '#F72585', '#7209B7', '#3A0CA3'
+    '#FF0000', '#0066FF', '#FFCC00', '#00CC00',
+    '#FF6600', '#FF00FF', '#00CCFF', '#FFFF00',
+    '#FF3333', '#0099FF', '#CC00FF', '#00FF99'
   ], []);
 
   // Function to toggle to ZIP code mode
@@ -216,7 +216,7 @@ const WheelOfLunch = () => {
     const ctx = canvas.getContext('2d');
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    const radius = Math.min(centerX, centerY) - 10;
+    const radius = Math.min(centerX, centerY) - 15;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -229,6 +229,7 @@ const WheelOfLunch = () => {
       const startAngle = index * anglePerSlice;
       const endAngle = (index + 1) * anglePerSlice;
 
+      // Draw slice with 3D effect
       ctx.beginPath();
       ctx.moveTo(centerX, centerY);
       ctx.arc(centerX, centerY, radius, startAngle, endAngle);
@@ -237,28 +238,56 @@ const WheelOfLunch = () => {
       ctx.fillStyle = colors[index % colors.length];
       ctx.fill();
 
+      // Add darker border for 3D effect
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Add highlight on one side for depth
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, radius - 3, startAngle, startAngle + anglePerSlice * 0.3);
+      ctx.closePath();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
       ctx.save();
       ctx.translate(centerX, centerY);
       ctx.rotate(startAngle + anglePerSlice / 2);
       ctx.textAlign = 'right';
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 14px Arial';
+      ctx.fillStyle = '#000';
+      ctx.font = 'bold 16px Arial';
+      ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+      ctx.shadowBlur = 3;
 
-      let textRadius = radius - 20;
+      let textRadius = radius - 30;
       if (startAngle + anglePerSlice / 2 > Math.PI / 2 && startAngle + anglePerSlice / 2 < Math.PI * 3 / 2) {
         ctx.rotate(Math.PI);
         ctx.textAlign = 'left';
         textRadius = -textRadius;
       }
 
+      // Draw text with better contrast
       ctx.fillText(restaurant.name, textRadius, 5);
       ctx.restore();
     });
 
+    // Draw center circle with gradient
+    const gradient = ctx.createRadialGradient(centerX - 5, centerY - 5, 0, centerX, centerY, 25);
+    gradient.addColorStop(0, '#FFD700');
+    gradient.addColorStop(1, '#FFA500');
+    
     ctx.beginPath();
-    ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
-    ctx.fillStyle = '#333';
+    ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI);
+    ctx.fillStyle = gradient;
     ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI);
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.stroke();
   });
 
   // Update drawWheelRef.current when restaurants or colors change
@@ -270,7 +299,7 @@ const WheelOfLunch = () => {
       const ctx = canvas.getContext('2d');
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
-      const radius = Math.min(centerX, centerY) - 10;
+      const radius = Math.min(centerX, centerY) - 15;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -283,6 +312,7 @@ const WheelOfLunch = () => {
         const startAngle = index * anglePerSlice;
         const endAngle = (index + 1) * anglePerSlice;
 
+        // Draw slice with 3D effect
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
         ctx.arc(centerX, centerY, radius, startAngle, endAngle);
@@ -291,28 +321,56 @@ const WheelOfLunch = () => {
         ctx.fillStyle = colors[index % colors.length];
         ctx.fill();
 
+        // Add darker border for 3D effect
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Add highlight on one side for depth
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius - 3, startAngle, startAngle + anglePerSlice * 0.3);
+        ctx.closePath();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
         ctx.save();
         ctx.translate(centerX, centerY);
         ctx.rotate(startAngle + anglePerSlice / 2);
         ctx.textAlign = 'right';
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 14px Arial';
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 16px Arial';
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+        ctx.shadowBlur = 3;
 
-        let textRadius = radius - 20;
+        let textRadius = radius - 30;
         if (startAngle + anglePerSlice / 2 > Math.PI / 2 && startAngle + anglePerSlice / 2 < Math.PI * 3 / 2) {
           ctx.rotate(Math.PI);
           ctx.textAlign = 'left';
           textRadius = -textRadius;
         }
 
+        // Draw text with better contrast
         ctx.fillText(restaurant.name, textRadius, 5);
         ctx.restore();
       });
 
+      // Draw center circle with gradient
+      const gradient = ctx.createRadialGradient(centerX - 5, centerY - 5, 0, centerX, centerY, 25);
+      gradient.addColorStop(0, '#FFD700');
+      gradient.addColorStop(1, '#FFA500');
+      
       ctx.beginPath();
-      ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
-      ctx.fillStyle = '#333';
+      ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI);
+      ctx.fillStyle = gradient;
       ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI);
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 2;
+      ctx.stroke();
     };
   }, [restaurants, colors]);
 
@@ -453,16 +511,16 @@ const WheelOfLunch = () => {
   }
 
   return (
-    <div className="flex flex-col items-center p-4 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-center mb-6">Lakey's Wheel of Lunch</h1>
-      <p className="text-center mb-4">Group can't decide what's for lunch? Put your lunch selection into fate's hands. Spin Lakey's Wheel of Lunch!</p>
+    <div className="min-h-screen bg-gray-900 flex flex-col items-center p-4 max-w-4xl mx-auto">
+      <h1 className="text-4xl font-bold text-center mb-2 text-white">Lakey's Wheel of Lunch</h1>
+      <p className="text-center mb-8 text-gray-300">Group can't decide what's for lunch? Put your lunch selection into fate's hands. Spin Lakey's Wheel of Lunch!</p>
 
-      <div className="bg-gray-100 w-full p-4 rounded-lg mb-6">
-        <p className="text-lg font-semibold">{status}</p>
+      <div className="bg-gray-800 w-full p-4 rounded-lg mb-8 border border-gray-700">
+        <p className="text-lg font-semibold text-white">{status}</p>
 
         {userLocation && (
           <div className="flex items-center justify-center mt-2">
-            <p className="text-sm text-gray-600 ">
+            <p className="text-sm text-gray-400">
               {isUsingZipCode ? (
                 <>Using zip code location</>
               ) : (
@@ -481,7 +539,7 @@ const WheelOfLunch = () => {
               )}
               <button
                 onClick={toggleLocationLock}
-                className="p-1 rounded bg-gray-200 hover:bg-gray-300"
+                className="p-1 rounded bg-gray-700 hover:bg-gray-600 text-white"
                 title={isLocationLocked ? "Unlock location" : "Lock location"}
                 type="button"
               >
@@ -493,10 +551,10 @@ const WheelOfLunch = () => {
 
         <div className="flex justify-center mt-4 mb-2">
           <div className="flex gap-4 items-center">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Sort By:
             </label>
-            <label className="flex items-center">
+            <label className="flex items-center text-gray-300">
               <input
                 type="radio"
                 value="radius"
@@ -506,7 +564,7 @@ const WheelOfLunch = () => {
               />
               Radius ({radiusInMiles} miles)
             </label>
-            <label className="flex items-center">
+            <label className="flex items-center text-gray-300">
               <input
                 type="radio"
                 value="distance"
@@ -521,7 +579,7 @@ const WheelOfLunch = () => {
 
         {rankBy === 'radius' && (
           <div className="mt-2 mb-2">
-            <label htmlFor="radius-slider" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="radius-slider" className="block text-sm font-medium text-gray-300 mb-1">
               Search Radius: {radiusInMiles} miles
             </label>
             <input
@@ -532,7 +590,7 @@ const WheelOfLunch = () => {
               step="500"
               value={searchRadius}
               onChange={handleRadiusChange}
-              className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
             />
             <div className="flex justify-between text-xs text-gray-500 mt-1">
               <span>1 mi</span>
@@ -545,15 +603,15 @@ const WheelOfLunch = () => {
         )}
 
         {locationError && !userLocation && (
-          <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
-            <p className="text-sm text-yellow-800 mb-2">{locationError}</p>
+          <div className="mt-3 p-3 bg-yellow-900 border border-yellow-700 rounded">
+            <p className="text-sm text-yellow-300 mb-2">{locationError}</p>
             <form onSubmit={handleZipCodeSubmit} className="flex">
               <input
                 type="text"
                 value={zipCode}
                 onChange={(e) => setZipCode(e.target.value)}
                 placeholder="Enter ZIP code"
-                className="flex-1 px-3 py-2 border rounded-l text-sm"
+                className="flex-1 px-3 py-2 border border-gray-600 rounded-l text-sm bg-gray-700 text-white placeholder-gray-500"
                 pattern="^\d{5}(-\d{4})?$"
                 title="Enter a valid US ZIP code"
                 aria-label="ZIP code"
@@ -574,7 +632,7 @@ const WheelOfLunch = () => {
         {userLocation && !isUsingZipCode && !locationError && (
           <button
             onClick={toggleToZipCodeMode}
-            className="mt-2 text-sm text-blue-600 hover:underline focus:underline focus:outline-none"
+            className="mt-2 text-sm text-blue-400 hover:underline focus:underline focus:outline-none"
             type="button"
           >
             Use ZIP code instead
@@ -582,12 +640,18 @@ const WheelOfLunch = () => {
         )}
       </div>
 
-      <div className="mb-6 relative">
+      <div className="mb-8 relative flex flex-col items-center">
+        {/* Pointer at the top */}
+        <div className="relative z-10 mb-2">
+          <div className="w-0 h-0 border-l-6 border-r-6 border-t-8 border-l-transparent border-r-transparent border-t-yellow-400 drop-shadow-lg"
+               style={{borderLeft: '12px solid transparent', borderRight: '12px solid transparent', borderTop: '15px solid #FBBF24'}}></div>
+        </div>
+        {/* Wheel */}
         <canvas
           ref={canvasRef}
-          width={400}
-          height={400}
-          className="border rounded-full shadow-lg"
+          width={500}
+          height={500}
+          className="border-8 border-yellow-400 rounded-full shadow-2xl drop-shadow-2xl"
         />
       </div>
 
@@ -595,10 +659,10 @@ const WheelOfLunch = () => {
         <button
           onClick={spinWheel}
           disabled={isSpinning || restaurants.length === 0}
-          className={`px-6 py-3 rounded-lg text-white font-bold ${
+          className={`px-8 py-4 rounded-lg text-white font-bold text-lg ${
             isSpinning || restaurants.length === 0
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-green-500 hover:bg-green-600'
+              ? 'bg-gray-600 cursor-not-allowed'
+              : 'bg-green-500 hover:bg-green-600 shadow-lg'
           }`}
           type="button"
         >
@@ -608,64 +672,64 @@ const WheelOfLunch = () => {
         <button
           onClick={refreshRestaurants}
           disabled={isSpinning}
-          className={`px-6 py-3 rounded-lg text-white font-bold flex items-center ${
-            isSpinning ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+          className={`px-8 py-4 rounded-lg text-white font-bold text-lg flex items-center ${
+            isSpinning ? 'bg-gray-600 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 shadow-lg'
           }`}
           type="button"
         >
-          <RefreshCw size={18} className="mr-2" />
+          <RefreshCw size={20} className="mr-2" />
           Refresh Options
         </button>
       </div>
 
       {selectedRestaurant && (
-        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md border-t-4 border-green-500 mb-6 animate-fade-in">
-          <h2 className="text-xl font-bold text-center mb-3">Your Lunch Pick:</h2>
+        <div className="bg-gray-800 p-8 rounded-lg shadow-2xl w-full max-w-md border-t-4 border-yellow-400 mb-6 animate-fade-in">
+          <h2 className="text-2xl font-bold text-center mb-4 text-yellow-400">🎉 Your Lunch Pick 🎉</h2>
           <div className="text-center">
-            <p className="text-3xl font-bold text-green-700 mb-2">{selectedRestaurant.name}</p>
+            <p className="text-4xl font-bold text-white mb-3">{selectedRestaurant.name}</p>
 
-            <div className="flex justify-center items-center mb-2">
+            <div className="flex justify-center items-center mb-3">
               {selectedRestaurant.rating > 0 && (
                 <>
-                  <span className="text-yellow-500 font-bold mr-1">{selectedRestaurant.rating.toFixed(1)}</span>
-                  <span className="text-yellow-500">★</span>
-                  <span className="text-gray-500 text-sm ml-1">({selectedRestaurant.review_count} reviews)</span>
-                  <span className="mx-2 text-gray-400">|</span>
+                  <span className="text-yellow-400 font-bold text-lg mr-1">{selectedRestaurant.rating.toFixed(1)}</span>
+                  <span className="text-yellow-400 text-lg">★</span>
+                  <span className="text-gray-400 text-sm ml-1">({selectedRestaurant.review_count} reviews)</span>
+                  <span className="mx-2 text-gray-600">|</span>
                 </>
               )}
-              <span className="text-gray-800 font-medium">{selectedRestaurant.price_level > 0 ? "$".repeat(selectedRestaurant.price_level) : "Price N/A"}</span>
+              <span className="text-yellow-400 font-bold">{selectedRestaurant.price_level > 0 ? "$".repeat(selectedRestaurant.price_level) : "Price N/A"}</span>
             </div>
 
             {selectedRestaurant.category && (
-              <p className="text-blue-600 font-semibold mb-1">{selectedRestaurant.category}</p>
+              <p className="text-blue-400 font-semibold mb-1">{selectedRestaurant.category}</p>
             )}
-            <p className="text-gray-600 text-sm mb-3">{selectedRestaurant.address}</p>
+            <p className="text-gray-400 text-sm mb-4">{selectedRestaurant.address}</p>
 
             {selectedRestaurant.business_status && (
-              <div className={`inline-block px-2 py-1 rounded-full text-xs font-medium mb-3 ${
-                selectedRestaurant.business_status === 'OPERATIONAL' ? 'bg-green-100 text-green-800' :
-                selectedRestaurant.business_status === 'CLOSED_TEMPORARILY' ? 'bg-yellow-100 text-yellow-800' :
-                'bg-red-100 text-red-800'
+              <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium mb-4 ${
+                selectedRestaurant.business_status === 'OPERATIONAL' ? 'bg-green-900 text-green-300' :
+                selectedRestaurant.business_status === 'CLOSED_TEMPORARILY' ? 'bg-yellow-900 text-yellow-300' :
+                'bg-red-900 text-red-300'
               }`}>
-                {selectedRestaurant.business_status === 'OPERATIONAL' ? 'Open' :
-                 selectedRestaurant.business_status === 'CLOSED_TEMPORARILY' ? 'Temporarily Closed' :
-                 'Permanently Closed'}
+                {selectedRestaurant.business_status === 'OPERATIONAL' ? '✓ Open' :
+                 selectedRestaurant.business_status === 'CLOSED_TEMPORARILY' ? '⏸ Temporarily Closed' :
+                 '✕ Permanently Closed'}
               </div>
             )}
 
             {selectedRestaurant.description && (
-              <div className="bg-gray-50 p-3 rounded text-sm text-gray-700 italic mb-4">
+              <div className="bg-gray-700 p-4 rounded text-sm text-gray-300 italic mb-4">
                 "{selectedRestaurant.description}"
               </div>
             )}
 
-            <div className="flex justify-center gap-3">
+            <div className="flex justify-center gap-3 flex-wrap">
               {selectedRestaurant.id && (
                 <a
                   href={`https://www.google.com/maps/place/?q=place_id:${selectedRestaurant.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg flex items-center transition-colors"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center transition-colors"
                 >
                   <Map size={16} className="mr-2" />
                   View on Map
@@ -674,7 +738,7 @@ const WheelOfLunch = () => {
               <button
                 onClick={spinWheel}
                 disabled={isSpinning}
-                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg flex items-center transition-colors"
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center transition-colors"
                 type="button"
               >
                 <RefreshCw size={16} className="mr-2" />
@@ -687,7 +751,7 @@ const WheelOfLunch = () => {
             />
 
             {selectedRestaurant.location && userLocation && (
-              <div className="mt-3 text-xs text-gray-500">
+              <div className="mt-4 text-xs text-gray-500">
                 Approximately {calculateDistance(userLocation, selectedRestaurant.location).toFixed(1)} miles away
               </div>
             )}
