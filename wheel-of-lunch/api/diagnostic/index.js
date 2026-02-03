@@ -132,7 +132,7 @@ async function testUrlSigning() {
  * @param {Object} context - Azure Function context
  * @param {Object} req - HTTP request
  */
-module.exports = async function (context, req) {
+async function handler(context, req) {
     try {
         const envInfo = getEnvironmentInfo();
         const googleApiTest = await testGoogleApi();
@@ -163,4 +163,6 @@ module.exports = async function (context, req) {
             }
         };
     }
-};
+}
+
+module.exports = handler;

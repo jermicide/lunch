@@ -109,7 +109,7 @@ function mapPlaceResponse(place) {
  * @param {Object} context - Azure Function context
  * @param {Object} req - HTTP request
  */
-module.exports = async function (context, req) {
+async function handler(context, req) {
     context.log('Processing places API request');
 
     try {
@@ -224,4 +224,6 @@ module.exports = async function (context, req) {
             }
         };
     }
-};
+}
+
+module.exports = handler;
