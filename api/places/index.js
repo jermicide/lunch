@@ -1,4 +1,14 @@
 const { Client } = require('@googlemaps/google-maps-services-js');
+const {
+    handleCorsPreFlight,
+    validateEnvironment,
+    checkRateLimit,
+    getClientIp,
+    errorResponse,
+    successResponse,
+    sanitizeInput,
+    logRequest
+} = require('../middleware');
 
 /**
  * Validates latitude and longitude coordinates
@@ -110,7 +120,21 @@ function mapPlaceResponse(place) {
  * @param {Object} req - HTTP request
  */
 async function handler(context, req) {
-    context.log('Processing places API request');
+    // Handle CORS preflight requests
+    if (req.method === 'OPTIONS') {
+        handleCorsPreFlight(context);
+        return;
+    }
+
+    // Log request
+    logRequest(context, req);
+
+    // Rate limiting
+    const clientIp = getClientIp(req);
+    if (checkRateLimit(clientIp, 100, 60000)) {
+        context.res = errorResponse(429, 'Too many requests. Please try again later.');
+        return;
+    }
 
     try {
         const { lat, lng, radius = 1500 } = req.query;
@@ -120,24 +144,19 @@ async function handler(context, req) {
         const longitude = parseFloat(lng);
 
         if (!isValidCoordinates(latitude, longitude)) {
-            context.res = {
-                status: 400,
-                body: { error: 'Invalid or missing location coordinates' }
-            };
+            context.res = errorResponse(400, 'Invalid or missing location coordinates');
             return;
         }
 
         // Validate API key exists
-        const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
-        if (!GOOGLE_API_KEY) {
+        const envError = validateEnvironment(['GOOGLE_API_KEY']);
+        if (envError) {
             context.log.error('Missing Google API Key configuration');
-            context.res = {
-                status: 500,
-                body: { error: 'Server configuration error' }
-            };
+            context.res = errorResponse(500, 'Server configuration error');
             return;
         }
 
+        const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
         const searchRadius = normalizeRadius(radius);
         context.log(`Fetching restaurants near ${latitude},${longitude}`);
 
@@ -175,13 +194,7 @@ async function handler(context, req) {
         // Handle error responses from Google
         if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
             context.log.error(`Google Places API error: ${data.status}`);
-            context.res = {
-                status: 400,
-                body: {
-                    error: 'Google Places API error',
-                    status: data.status
-                }
-            };
+            context.res = errorResponse(400, 'Google Places API error', { status: data.status });
             return;
         }
 
@@ -197,14 +210,7 @@ async function handler(context, req) {
             .filter(place => place !== null);
 
 
-        context.res = {
-            status: 200,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            body: { places }
-        };
+        context.res = successResponse({ places });
     } catch (error) {
         context.log.error(`Places API error: ${error.message}`);
         context.log.error(`Error type: ${error.name}`);
@@ -215,14 +221,9 @@ async function handler(context, req) {
             context.log.error(`Response data: ${JSON.stringify(error.response.data)}`);
         }
 
-        context.res = {
-            status: 500,
-            body: {
-                error: 'Failed to fetch restaurants',
-                message: error.message,
-                stack: error.stack
-            }
-        };
+        context.res = errorResponse(500, 'Failed to fetch restaurants', {
+            message: error.message
+        });
     }
 }
 

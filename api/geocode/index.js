@@ -1,6 +1,16 @@
 const axios = require('axios');
 const crypto = require('crypto');
 const querystring = require('querystring');
+const {
+    handleCorsPreFlight,
+    validateEnvironment,
+    checkRateLimit,
+    getClientIp,
+    errorResponse,
+    successResponse,
+    sanitizeInput,
+    logRequest
+} = require('../middleware');
 
 /**
  * Signs a URL with HMAC-SHA1 signature for Google API requests
@@ -40,35 +50,48 @@ function isValidZipCode(zipCode) {
  * @param {Object} req - HTTP request with zipCode query parameter
  */
 async function handler(context, req) {
-    context.log('Processing geocode API request');
+    // Handle CORS preflight requests
+    if (req.method === 'OPTIONS') {
+        handleCorsPreFlight(context);
+        return;
+    }
+
+    // Log request
+    logRequest(context, req);
+
+    // Rate limiting
+    const clientIp = getClientIp(req);
+    if (checkRateLimit(clientIp, 100, 60000)) {
+        context.res = errorResponse(429, 'Too many requests. Please try again later.');
+        return;
+    }
 
     try {
         const { zipCode } = req.query;
 
         // Validate ZIP code
         if (!isValidZipCode(zipCode)) {
-            context.res = {
-                status: 400,
-                body: { error: 'Missing or invalid ZIP code' }
-            };
+            context.res = errorResponse(400, 'Missing or invalid ZIP code');
             return;
         }
 
+        // Sanitize input
+        const sanitizedZipCode = sanitizeInput(zipCode);
+
         // Validate API key exists
-        const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
-        if (!GOOGLE_API_KEY) {
+        const envError = validateEnvironment(['GOOGLE_API_KEY']);
+        if (envError) {
             context.log.error('Missing Google API Key configuration');
-            context.res = {
-                status: 500,
-                body: { error: 'Server configuration error' }
-            };
+            context.res = errorResponse(500, 'Server configuration error');
             return;
         }
+
+        const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 
         // Build the base URL with parameters
         const baseUrl = 'https://maps.googleapis.com/maps/api/geocode/json';
         const params = {
-            address: zipCode.trim(),
+            address: sanitizedZipCode.trim(),
             key: GOOGLE_API_KEY
         };
 
@@ -83,7 +106,7 @@ async function handler(context, req) {
             context.log('Using URL signing for geocode request');
         }
 
-        context.log(`Geocoding ZIP code: ${zipCode}`);
+        context.log(`Geocoding ZIP code: ${sanitizedZipCode}`);
 
         // Make the request
         const response = await axios.get(requestUrl, {
@@ -94,24 +117,11 @@ async function handler(context, req) {
         // Check if the geocoding was successful
         if (data.status !== 'OK') {
             context.log.error(`Geocoding error: ${data.status}`);
-            context.res = {
-                status: 400,
-                body: {
-                    error: 'Geocoding failed',
-                    status: data.status
-                }
-            };
+            context.res = errorResponse(400, 'Geocoding failed', { status: data.status });
             return;
         }
 
-        context.res = {
-            status: 200,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            body: data
-        };
+        context.res = successResponse(data);
     } catch (error) {
         context.log.error(`Geocode API error: ${error.message}`);
         context.log.error(`Stack: ${error.stack}`);
@@ -120,12 +130,7 @@ async function handler(context, req) {
             context.log.error(`Response status: ${error.response.status}`);
         }
 
-        context.res = {
-            status: 500,
-            body: {
-                error: 'Failed to geocode ZIP code'
-            }
-        };
+        context.res = errorResponse(500, 'Failed to geocode ZIP code');
     }
 }
 
