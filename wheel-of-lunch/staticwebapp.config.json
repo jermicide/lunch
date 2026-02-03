@@ -1,13 +1,7 @@
 {
     "routes": [
       {
-        "route": "/api/places",
-        "methods": ["GET"],
-        "allowedRoles": ["anonymous"]
-      },
-      {
-        "route": "/api/geocode",
-        "methods": ["GET"],
+        "route": "/api/*",
         "allowedRoles": ["anonymous"]
       }
     ],

@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { RefreshCw, Map, Lock, Unlock } from 'lucide-react';
 import ShareButtons from './ShareButtons';
 
+// Get API base URL from environment variable, default to /api for backward compatibility
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+
 const WheelOfLunch = () => {
   // State definitions
   const [restaurants, setRestaurants] = useState([]);
@@ -75,7 +78,7 @@ const WheelOfLunch = () => {
             ...(rankBy === 'distance' && { rankBy: 'distance' })
           });
 
-          const response = await fetch(`/api/places?${queryParams.toString()}`);
+          const response = await fetch(`${API_BASE_URL}/places?${queryParams.toString()}`);
 
           const contentType = response.headers.get('content-type') || '';
           if (!contentType.includes('application/json')) {
@@ -139,7 +142,7 @@ const WheelOfLunch = () => {
 
     const geocodeZipCode = async () => {
       try {
-        const response = await fetch(`/api/geocode?zipCode=${zipCode}`);
+        const response = await fetch(`${API_BASE_URL}/geocode?zipCode=${zipCode}`);
 
         const contentType = response.headers.get('content-type') || '';
         if (!contentType.includes('application/json')) {

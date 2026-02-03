@@ -1,0 +1,27 @@
+{
+    "name": "wheel-of-lunch-api",
+    "version": "1.0.0",
+    "description": "API functions for Wheel of Lunch application",
+    "main": "index.js",
+    "scripts": {
+        "test": "jest --coverage",
+        "test:watch": "jest --watch",
+        "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
+        "lint": "eslint .",
+        "format": "prettier --write ."
+    },
+    "dependencies": {
+        "@googlemaps/google-maps-services-js": "^3.4.0",
+        "axios": "^1.6.2"
+    },
+    "devDependencies": {
+        "jest": "^29.7.0",
+        "eslint": "^8.56.0",
+        "eslint-config-prettier": "^9.1.0",
+        "prettier": "^3.1.0",
+        "jest-mock-extended": "^3.0.5"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}
