@@ -13,62 +13,175 @@ A React-based restaurant picker that spins the wheel to help groups decide where
 - **Responsive Design**: Works on desktop and mobile devices
 - **Ad-Free**: Clean, distraction-free experience
 
+## 🏗️ Architecture
+
+This project uses a decoupled architecture for optimal deployment on Azure:
+
+- **Frontend**: React SPA deployed on Azure Static Web Apps
+  - Location: `/wheel-of-lunch`
+  - Built with Vite, React, and Tailwind CSS
+  - Hosted on Azure Static Web Apps
+
+- **API**: Standalone Azure Function App
+  - Location: `/api`
+  - Node.js Azure Functions
+  - Separate deployment and scaling from frontend
+  - Integrates with Google Places API
+
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js and npm installed
+- Node.js 18.x or higher
 - Google API credentials with Places API and Geocoding API enabled
-- Azure Static Web App for deployment (optional)
+- Azure CLI (for deployment)
+- Azure Function Core Tools (for local API development)
 
-### Installation
+### Local Development
 
-1. Clone the repository
+#### 1. Clone the repository
 ```bash
 git clone https://github.com/jermicide/lunch.git
-cd lunch/wheel-of-lunch
+cd lunch
 ```
 
-2. Install dependencies
+#### 2. Set up the API
+
 ```bash
+cd api
+cp local.settings.json.template local.settings.json
+# Edit local.settings.json and add your Google API credentials
 npm install
+func start  # Starts API on http://localhost:7071
 ```
 
-3. Set up environment variables
+#### 3. Set up the Frontend (in a new terminal)
+
 ```bash
-# Create a .env file with your Google API credentials
-GOOGLE_API_KEY=your_google_api_key_here
+cd wheel-of-lunch
+npm install
+npm run dev  # Starts frontend on http://localhost:5173
 ```
 
-### Development
+The frontend dev server is configured to proxy API requests to `http://localhost:7071`.
 
-Run the development server:
-```bash
-npm start
+### Environment Variables
+
+#### API (`/api/local.settings.json`)
+```json
+{
+  "Values": {
+    "GOOGLE_API_KEY": "your-google-api-key",
+    "GOOGLE_SIGNING_SECRET": "your-signing-secret"
+  }
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-### Build
-
-Create a production build:
+#### Frontend (`/wheel-of-lunch/.env`)
 ```bash
-npm run build
+VITE_API_BASE_URL=/api  # For local development with proxy
+# OR
+VITE_API_BASE_URL=https://wheel-of-lunch-api.azurewebsites.net/api  # For production
 ```
 
-### Testing
+## 🚢 Deployment
 
-Run tests:
+### API Deployment
+
+The API is deployed as a standalone Azure Function App. See [api/DEPLOYMENT.md](./api/DEPLOYMENT.md) for detailed instructions.
+
+**Quick deploy via GitHub Actions:**
+1. Create an Azure Function App
+2. Configure GitHub secrets (see DEPLOYMENT.md)
+3. Push to main branch - automatic deployment via `.github/workflows/azure-function-app-deploy.yml`
+
+### Frontend Deployment
+
+The frontend is deployed to Azure Static Web Apps automatically via GitHub Actions.
+
+**Configuration:**
+- Workflow: `.github/workflows/azure-static-web-apps-icy-mushroom-0aa01d710.yml`
+- Set `VITE_API_BASE_URL` secret to your Function App URL
+
+## 🧪 Testing
+
+### API Tests
 ```bash
+cd api
+npm test                 # Run all tests
+npm run test:watch       # Watch mode
+```
+
+### Frontend Tests
+```bash
+cd wheel-of-lunch
 npm test
 ```
 
-## 🏗️ Architecture
+## 📁 Project Structure
 
-- **Frontend**: React + Vite with Tailwind CSS
-- **Backend**: Azure Functions for API endpoints
-  - `/api/places` - Google Places search
-  - `/api/geocode` - ZIP code to coordinates conversion
-  - `/api/diagnostic` - Configuration verification
+```
+lunch/
+├── api/                          # Standalone Azure Function App
+│   ├── places/                   # Places search endpoint
+│   ├── geocode/                  # ZIP code geocoding endpoint
+│   ├── diagnostic/               # Health check endpoint
+│   ├── test/                     # Test endpoint
+│   ├── host.json                 # Function app configuration
+│   ├── package.json              # API dependencies
+│   └── DEPLOYMENT.md             # API deployment guide
+├── wheel-of-lunch/               # React frontend
+│   ├── src/
+│   │   ├── components/           # React components
+│   │   │   └── WheelOfLunch.jsx  # Main wheel component
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── public/                   # Static assets
+│   ├── index.html
+│   ├── vite.config.js
+│   └── package.json
+└── .github/workflows/
+    ├── azure-function-app-deploy.yml        # API deployment
+    └── azure-static-web-apps-*.yml          # Frontend deployment
+```
+
+## 🔌 API Endpoints
+
+- `GET /api/places?lat={lat}&lng={lng}&radius={radius}` - Get nearby restaurants
+- `GET /api/geocode?zipCode={zipCode}` - Convert ZIP to coordinates  
+- `GET /api/diagnostic` - Health check and configuration status
+- `GET /api/test` - Simple test endpoint
+
+See [api/DEPLOYMENT.md](./api/DEPLOYMENT.md) for detailed API documentation.
+
+## 🛠️ Technologies
+
+### Frontend
+- React 18
+- Vite
+- Tailwind CSS
+- Lucide React (icons)
+- Canvas API (for wheel rendering)
+
+### API
+- Azure Functions (Node.js)
+- Google Maps Places API
+- Google Maps Geocoding API
+- Axios
+- Jest (testing)
+
+### Infrastructure
+- Azure Static Web Apps (frontend)
+- Azure Function App (API)
+- GitHub Actions (CI/CD)
+- Application Insights (monitoring)
+
+## 🔒 Security Best Practices
+
+✅ API keys stored in Azure configuration (never in code)  
+✅ CORS properly configured for production domains  
+✅ Input validation on all endpoints  
+✅ HTTPS enforced  
+✅ Separate deployment credentials for frontend and API
 
 ## 🎮 How It Works
 
