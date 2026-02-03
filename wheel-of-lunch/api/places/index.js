@@ -134,9 +134,7 @@ module.exports = async function (context, req) {
         }
 
         const searchRadius = normalizeRadius(radius);
-        context.log(
-            `Fetching restaurants near ${latitude},${longitude} with radius ${searchRadius}m`
-        );
+        context.log(`Fetching restaurants near ${latitude},${longitude}`);
 
         // Initialize Google Maps client
         const client = new Client({});
@@ -144,16 +142,22 @@ module.exports = async function (context, req) {
         // Build request parameters
         const params = {
             location: { lat: latitude, lng: longitude },
-            type: 'restaurant',
             key: GOOGLE_API_KEY,
-            language: 'en'
+            language: 'en',
+            type: 'restaurant'
         };
 
         // Use radius or rankby:distance, not both
+        // Note: rankby=distance requires at least one of keyword, name, or type (we use type=restaurant)
+        // and does NOT support radius parameter
         if (req.query.rankBy === 'distance') {
+            // When using rankby=distance, we cannot use radius
             params.rankby = 'distance';
+            context.log('Using distance-based ranking (rankby=distance) without radius');
         } else {
+            // When using radius-based search
             params.radius = searchRadius;
+            context.log(`Using radius-based search with radius=${searchRadius}m`);
         }
 
         const response = await client.placesNearby({ params });
@@ -195,16 +199,19 @@ module.exports = async function (context, req) {
         };
     } catch (error) {
         context.log.error(`Places API error: ${error.message}`);
+        context.log.error(`Error type: ${error.name}`);
         context.log.error(`Stack: ${error.stack}`);
 
         if (error.response) {
             context.log.error(`Response status: ${error.response.status}`);
+            context.log.error(`Response data: ${JSON.stringify(error.response.data)}`);
         }
 
         context.res = {
             status: 500,
             body: {
-                error: 'Failed to fetch restaurants'
+                error: 'Failed to fetch restaurants',
+                message: error.message
             }
         };
     }
