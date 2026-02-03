@@ -219,7 +219,8 @@ module.exports = async function (context, req) {
             status: 500,
             body: {
                 error: 'Failed to fetch restaurants',
-                message: error.message
+                message: error.message,
+                stack: error.stack
             }
         };
     }
