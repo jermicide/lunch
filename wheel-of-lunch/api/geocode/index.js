@@ -39,7 +39,7 @@ function isValidZipCode(zipCode) {
  * @param {Object} context - Azure Function context
  * @param {Object} req - HTTP request with zipCode query parameter
  */
-module.exports = async function (context, req) {
+async function handler(context, req) {
     context.log('Processing geocode API request');
 
     try {
@@ -127,4 +127,6 @@ module.exports = async function (context, req) {
             }
         };
     }
-};
+}
+
+module.exports = handler;
